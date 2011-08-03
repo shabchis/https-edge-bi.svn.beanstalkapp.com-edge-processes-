@@ -13,10 +13,14 @@ namespace Edge.Processes.DirectoryWatcher
 		/// </summary>
 		static void Main()
 		{
+			//for debug only
+			//DirectoryWatcher d = new DirectoryWatcher();
+			//d.Start();
+			//System.Threading.Thread.Sleep(999999);
 			ServiceBase[] ServicesToRun;
 			ServicesToRun = new ServiceBase[] 
 			{ 
-				new DirectoryWatcher() 
+			    new DirectoryWatcher() 
 			};
 			ServiceBase.Run(ServicesToRun);
 		}

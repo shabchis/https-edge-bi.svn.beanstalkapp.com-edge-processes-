@@ -25,7 +25,11 @@ namespace Edge.Processes.DirectoryWatcher
 		{
 			InitializeComponent();
 		}
-
+		//for debug only
+		//public void start()
+		//{
+		//    OnStart(null);
+		//}
 		protected override void OnStart(string[] args)
 		{
 			var configuration = (DirectoryWatcherConfiguration)ConfigurationManager.GetSection(DirectoryWatcherConfiguration.SectionName);

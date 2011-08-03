@@ -89,6 +89,9 @@ namespace Edge.Processes.DirectoryWatcher
 		public readonly Dictionary<string, string> ServiceOptions = new Dictionary<string, string>();
 		protected override bool OnDeserializeUnrecognizedAttribute(string name, string value)
 		{
+			if (!name.StartsWith("Options."))
+				return false;
+
 			this.ServiceOptions[name] = value;
 			return true;
 		}
