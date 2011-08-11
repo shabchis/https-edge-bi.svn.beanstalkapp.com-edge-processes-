@@ -89,7 +89,7 @@ namespace Edge.Processes.DirectoryWatcher
 			DirectoryWatchInfo info;
 			if (!_watchers.TryGetValue(watcher, out info))
 			{
-				Log.Write(String.Format("No watcher found for {0} - check your configuration.", e.Name), LogMessageType.Warning);
+				Log.Write(LogSource,String.Format("No watcher found for {0} - check your configuration.", e.Name), LogMessageType.Warning);
 				return;
 			}
 
@@ -104,7 +104,7 @@ namespace Edge.Processes.DirectoryWatcher
 			}
 			catch (Exception ex)
 			{
-				Log.Write(String.Format(
+				Log.Write(LogSource,String.Format(
 					"Could not create a connection to the scheduler{0}.",
 					String.IsNullOrWhiteSpace(info.Config.SchedulerUrl) ? string.Empty : " at " + info.Config.SchedulerUrl
 				), ex);
@@ -123,7 +123,7 @@ namespace Edge.Processes.DirectoryWatcher
 				}
 				catch (Exception ex)
 				{
-					Log.Write("Error creating options for the service from the <Directory> configuration.", ex);
+					Log.Write(LogSource,"Error creating options for the service from the <Directory> configuration.", ex);
 				}
 
 				try
@@ -132,7 +132,7 @@ namespace Edge.Processes.DirectoryWatcher
 				}
 				catch (Exception ex)
 				{
-					Log.Write(String.Format(
+					Log.Write(LogSource,String.Format(
 						"Error trying to call AddToSchedule on the scheduler{0}.",
 						String.IsNullOrWhiteSpace(info.Config.SchedulerUrl) ? string.Empty : " at " + info.Config.SchedulerUrl
 					), ex);
