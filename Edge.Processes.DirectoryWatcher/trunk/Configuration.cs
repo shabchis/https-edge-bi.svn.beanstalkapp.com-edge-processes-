@@ -86,13 +86,14 @@ namespace Edge.Processes.DirectoryWatcher
 		}
 
 		// Support for options
+		const string _optionPrefix = "Options.";
 		public readonly Dictionary<string, string> ServiceOptions = new Dictionary<string, string>();
 		protected override bool OnDeserializeUnrecognizedAttribute(string name, string value)
 		{
-			if (!name.StartsWith("Options."))
+			if (!name.StartsWith(_optionPrefix))
 				return false;
 
-			this.ServiceOptions[name] = value;
+			this.ServiceOptions[name.Substring(_optionPrefix.Length)] = value;
 			return true;
 		}
 
