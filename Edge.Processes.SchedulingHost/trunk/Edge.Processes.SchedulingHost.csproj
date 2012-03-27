@@ -11,7 +11,8 @@
     <RootNamespace>Edge.Processes.SchedulingHost</RootNamespace>
     <AssemblyName>Edge.Processes.SchedulingHost</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -96,6 +97,60 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DataStreams">
+      <HintPath>bin\DebubNewScheduling\DataStreams.dll</HintPath>
+    </Reference>
+    <Reference Include="Edge.Data.Pipeline">
+      <HintPath>bin\DebubNewScheduling\Edge.Data.Pipeline.dll</HintPath>
+    </Reference>
+    <Reference Include="Edge.Services.AdMetrics">
+      <HintPath>bin\DebubNewScheduling\Edge.Services.AdMetrics.dll</HintPath>
+    </Reference>
+    <Reference Include="Edge.Services.AdMetrics.Validations">
+      <HintPath>bin\DebubNewScheduling\Edge.Services.AdMetrics.Validations.dll</HintPath>
+    </Reference>
+    <Reference Include="Edge.Services.BackOffice.Generic">
+      <HintPath>bin\DebubNewScheduling\Edge.Services.BackOffice.Generic.dll</HintPath>
+    </Reference>
+    <Reference Include="Edge.Services.Facebook.GraphApi">
+      <HintPath>bin\DebubNewScheduling\Edge.Services.Facebook.GraphApi.dll</HintPath>
+    </Reference>
+    <Reference Include="Edge.Services.Facebook.UpdateCampaignStatus">
+      <HintPath>bin\DebubNewScheduling\Edge.Services.Facebook.UpdateCampaignStatus.dll</HintPath>
+    </Reference>
+    <Reference Include="Edge.Services.FTP">
+      <HintPath>bin\DebubNewScheduling\Edge.Services.FTP.dll</HintPath>
+    </Reference>
+    <Reference Include="Edge.Services.Google.Analytics">
+      <HintPath>bin\DebubNewScheduling\Edge.Services.Google.Analytics.dll</HintPath>
+    </Reference>
+    <Reference Include="Edge.Services.Metrics.Validations">
+      <HintPath>bin\DebubNewScheduling\Edge.Services.Metrics.Validations.dll</HintPath>
+    </Reference>
+    <Reference Include="Edge.Services.Microsoft.AdCenter">
+      <HintPath>bin\DebubNewScheduling\Edge.Services.Microsoft.AdCenter.dll</HintPath>
+    </Reference>
+    <Reference Include="Edge.Services.SegmentMetrics">
+      <HintPath>bin\DebubNewScheduling\Edge.Services.SegmentMetrics.dll</HintPath>
+    </Reference>
+    <Reference Include="Edge.Services.SegmentMetrics.Validations">
+      <HintPath>bin\DebubNewScheduling\Edge.Services.SegmentMetrics.Validations.dll</HintPath>
+    </Reference>
+    <Reference Include="Edge.Services.SqlServer">
+      <HintPath>bin\DebubNewScheduling\Edge.Services.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="GotDotNet.XPath">
+      <HintPath>bin\DebubNewScheduling\GotDotNet.XPath.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib">
+      <HintPath>bin\DebubNewScheduling\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>bin\DebubNewScheduling\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Ricciolo.Controls.TreeListView">
+      <HintPath>..\..\(third party)\WPF\Ricciolo.Controls.TreeListView\lib\Ricciolo.Controls.TreeListView.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
@@ -120,72 +175,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Framework\Edge.Core.Scheduling\Edge.Core.Scheduling.csproj">
-      <Project>{E700E7AA-08B7-44C3-8889-ACB4FAF92C90}</Project>
-      <Name>Edge.Core.Scheduling</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Framework\Edge.Core\Edge.Core.csproj">
-      <Project>{AD4B53AD-B28A-4E90-9483-D2F7C8E6D436}</Project>
-      <Name>Edge.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Framework\Edge.Data.Pipeline\Edge.Data.Pipeline.csproj">
-      <Project>{53391A99-E8CA-4262-A8E0-5F05A1CC6608}</Project>
-      <Name>Edge.Data.Pipeline</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Services\Edge.Services.AdMetrics.Validations\Edge.Services.AdMetrics.Validations.csproj">
-      <Project>{C6504C8B-C482-41B9-BC6E-BEF92AF9D6FE}</Project>
-      <Name>Edge.Services.AdMetrics.Validations</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Services\Edge.Services.AdMetrics\Edge.Services.AdMetrics.csproj">
-      <Project>{36B6740D-938E-4994-9A0D-2DCB94D032B6}</Project>
-      <Name>Edge.Services.AdMetrics</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Services\Edge.Services.BackOffice.Generic\Edge.Services.BackOffice.Generic.csproj">
-      <Project>{2AAA976A-3BE0-4A44-9A74-6406C02E1BB8}</Project>
-      <Name>Edge.Services.BackOffice.Generic</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Services\Edge.Services.Facebook.GraphApi\Edge.Services.Facebook.GraphApi.csproj">
-      <Project>{0CA66633-F417-4724-9FC5-5F8C6E1D72B5}</Project>
-      <Name>Edge.Services.Facebook.GraphApi</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Services\Edge.Services.Facebook.UpdateCampaignStatus\Edge.Services.Facebook.UpdateCampaignStatus.csproj">
-      <Project>{574E607D-CE99-4D73-AD4A-31F82F8D1C5E}</Project>
-      <Name>Edge.Services.Facebook.UpdateCampaignStatus</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Services\Edge.Services.FTP\Edge.Services.FTP.csproj">
-      <Project>{632805D5-EF7D-4741-B161-6693EC75938B}</Project>
-      <Name>Edge.Services.FTP</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Services\Edge.Services.Google.AdWords.V201109\Edge.Services.Google.AdWords.V201109.csproj">
-      <Project>{DFC1976B-10A9-4E74-8C61-48FA5732766E}</Project>
-      <Name>Edge.Services.Google.AdWords.V201109</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Services\Edge.Services.Google.Analytics\Edge.Services.Google.Analytics.csproj">
-      <Project>{C2150589-9BB4-4143-BD60-3BF5AC013972}</Project>
-      <Name>Edge.Services.Google.Analytics</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Services\Edge.Services.Microsoft.AdCenter\Edge.Services.Microsoft.AdCenter.csproj">
-      <Project>{C73E557C-2B70-4040-9FA5-5AA2C0A95717}</Project>
-      <Name>Edge.Services.Microsoft.AdCenter</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Services\Edge.Services.SegmentMetrics.Validations\Edge.Services.SegmentMetrics.Validations.csproj">
-      <Project>{7CBBE059-4A66-4DFF-81C7-EDA1D7094218}</Project>
-      <Name>Edge.Services.SegmentMetrics.Validations</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Services\Edge.Services.SegmentMetrics\Edge.Services.SegmentMetrics.csproj">
-      <Project>{90C8D5F3-B580-41C4-9567-E06B14772D24}</Project>
-      <Name>Edge.Services.SegmentMetrics</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Services\Edge.Services.SqlServer\Edge.Services.SqlServer.csproj">
-      <Project>{DE148C08-2A73-463D-9671-25DBB93005A0}</Project>
-      <Name>Edge.Services.SqlServer</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Utilities\Edge.Anaylysis.Validation\Edge.Anaylysis.Validation.csproj">
-      <Project>{46FB3816-A4F4-48B9-AEA3-82E94D247665}</Project>
-      <Name>Edge.Anaylysis.Validation</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
@@ -193,6 +182,16 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Framework\Edge.Core.Branch\Edge.Core.csproj">
+      <Project>{AD4B53AD-B28A-4E90-9483-D2F7C8E6D436}</Project>
+      <Name>Edge.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Framework\Edge.Core.Scheduling.Branch\Edge.Core.Scheduling.csproj">
+      <Project>{E700E7AA-08B7-44C3-8889-ACB4FAF92C90}</Project>
+      <Name>Edge.Core.Scheduling</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
