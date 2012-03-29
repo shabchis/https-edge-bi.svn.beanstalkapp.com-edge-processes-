@@ -73,10 +73,13 @@ namespace Edge.Processes.SchedulingHost
 					Outcome = SchedInfo.Value.LegacyInstance.Outcome,
 					SchdeuleStartTime = SchedInfo.Value.StartTime,
 					ScheduleEndTime = SchedInfo.Value.EndTime,
+					ActualStartTime=SchedInfo.Value.LegacyInstance.TimeStarted,
+					ActualEndTime=SchedInfo.Value.LegacyInstance.TimeEnded,
 					ServiceName = SchedInfo.Value.ServiceName,
 					State = SchedInfo.Value.LegacyInstance.State,
 					ScheduledID = SchedInfo.Value.ScheduledID,
-					ParentInstanceID=SchedInfo.Value.LegacyInstance.ParentInstance!=null ? SchedInfo.Value.LegacyInstance.ParentInstance.Guid : Guid.Empty
+					ParentInstanceID=SchedInfo.Value.LegacyInstance.ParentInstance!=null ? SchedInfo.Value.LegacyInstance.ParentInstance.Guid : Guid.Empty,
+					Progress=SchedInfo.Value.LegacyInstance.State==legacy.ServiceState.Ended ? 100 : SchedInfo.Value.LegacyInstance.Progress
 				};
 				_scheduledServices[SchedInfo.Value.LegacyInstance.Guid]= instancesInfo[index];
 				index++;
@@ -98,15 +101,30 @@ namespace Edge.Processes.SchedulingHost
 			TimeToRunEventArgs args = (TimeToRunEventArgs)e;
 
 			foreach (Edge.Core.Scheduling.Objects.ServiceInstance serviceInstance in args.ServicesToRun)
-			{
-				
+			{				
 				serviceInstance.LegacyInstance.StateChanged += new EventHandler<Core.Services.ServiceStateChangedEventArgs>(LegacyInstance_StateChanged);
 				serviceInstance.LegacyInstance.ChildServiceRequested += new EventHandler<Core.Services.ServiceRequestedEventArgs>(LegacyInstance_ChildServiceRequested);
-				serviceInstance.LegacyInstance.Initialize();
-				
+				serviceInstance.LegacyInstance.ProgressReported += new EventHandler(LegacyInstance_ProgressReported);
+				serviceInstance.LegacyInstance.Initialize();				
 			}
 		}
 
+		void LegacyInstance_ProgressReported(object sender, EventArgs e)
+		{
+			legacy.ServiceInstance instance = (Edge.Core.Services.ServiceInstance)sender;
+			double progress = instance.Progress * 100;
+			if (_scheduledServices.ContainsKey(instance.Guid))
+			{
+				ServiceInstanceInfo instanceInfo = _scheduledServices[instance.Guid];
+				instanceInfo.Progress = progress;
+				foreach (var callBack in _callBacks)
+				{
+					callBack.InstanceEvent(instanceInfo);
+
+				}
+			}
+
+		}
 		void LegacyInstance_ChildServiceRequested(object sender, Core.Services.ServiceRequestedEventArgs e)
 		{
 			try
@@ -115,6 +133,7 @@ namespace Edge.Processes.SchedulingHost
 				legacy.ServiceInstance instance = (legacy.ServiceInstance)sender;
 				e.RequestedService.ChildServiceRequested += new EventHandler<legacy.ServiceRequestedEventArgs>(LegacyInstance_ChildServiceRequested);
 				e.RequestedService.StateChanged += new EventHandler<legacy.ServiceStateChangedEventArgs>(LegacyInstance_StateChanged);
+				e.RequestedService.ProgressReported += new EventHandler(LegacyInstance_ProgressReported);
 			
 				_scheduler.AddChildServiceToSchedule(e.RequestedService);
 
@@ -127,13 +146,13 @@ namespace Edge.Processes.SchedulingHost
 
 				Edge.Core.Utilities.Log.Write("SchedulingControlForm", ex.Message, ex, Edge.Core.Utilities.LogMessageType.Error);
 			}
-		}
+		}	
 		void LegacyInstance_StateChanged(object sender, Core.Services.ServiceStateChangedEventArgs e)
 		{
 			try
 			{
 				legacy.ServiceInstance instance = (Edge.Core.Services.ServiceInstance)sender;
-				instance.OutcomeReported += new EventHandler(instance_OutcomeReported);
+				
 
 				if (e.StateAfter == legacy.ServiceState.Ready)
 					instance.Start();
@@ -142,12 +161,9 @@ namespace Edge.Processes.SchedulingHost
 
 					ServiceInstanceInfo stateInfo = _scheduledServices[instance.Guid];
 					stateInfo.State = e.StateAfter;
-					if (e.StateAfter == legacy.ServiceState.Ready)
-					{
+					if (e.StateAfter == legacy.ServiceState.Ready)					
 						stateInfo.ActualStartTime = instance.TimeStarted;
-
-
-					}
+					
 
 					foreach (var callBack in _callBacks)
 					{
@@ -179,6 +195,7 @@ namespace Edge.Processes.SchedulingHost
 				ServiceInstanceInfo OutcomeInfo = _scheduledServices[instance.Guid];
 				OutcomeInfo.Outcome = instance.Outcome;
 				OutcomeInfo.ActualEndTime = instance.TimeEnded;
+				OutcomeInfo.Progress = 100;
 				foreach (var callBack in _callBacks)
 					callBack.InstanceEvent(OutcomeInfo);
 			}
@@ -188,14 +205,10 @@ namespace Edge.Processes.SchedulingHost
 		internal void Stop()
 		{
 			_scheduler.Stop();
-
 		}
-
-
 
 		internal void Start()
 		{
-
 			_scheduler.Start();
 		}
 		internal void End()
