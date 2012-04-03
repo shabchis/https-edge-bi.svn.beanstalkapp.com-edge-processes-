@@ -198,6 +198,9 @@ namespace Edge.Processes.SchedulingHost
 				OutcomeInfo.Progress = 100;
 				foreach (var callBack in _callBacks)
 					callBack.InstanceEvent(OutcomeInfo);
+
+				_scheduler.Schedule(true);
+				
 			}
 			else
 				throw new Exception("LO agioni");
