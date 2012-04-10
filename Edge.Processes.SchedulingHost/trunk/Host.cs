@@ -10,37 +10,29 @@ using Edge.Core.Scheduling;
 using Edge.Core.Configuration;
 using Edge.Core.Scheduling.Objects;
 using System.ServiceModel;
+using System.ServiceModel.Description;
 
 namespace Edge.Processes.SchedulingHost
 {
 	public partial class Host : ServiceBase
 	{
 		ScheulingCommunication _scheulingCommunication;
-		public ServiceHost _serviceHost = null;
-		
+		public ServiceHost _serviceHost = null;		
 		public Host()
 		{
-			InitializeComponent();
-			
-			
-
-			
-			
+			InitializeComponent();			
 		}
 		public void Debug()
 		{
 			OnStart(null);
 		}
-
 		protected override void OnStart(string[] args)
-		{
+		{//TODO: FROM CONFIGURATION
 			if (_serviceHost == null)
 			{
 				if (_scheulingCommunication == null)
 					_scheulingCommunication = new ScheulingCommunication();
-				_serviceHost = new ServiceHost(_scheulingCommunication, new Uri[] { new Uri("net.pipe://localhost") });
-
-
+				_serviceHost = new ServiceHost(_scheulingCommunication, new Uri[] { new Uri(AppSettings.Get("Edge.Processes.SchedulingHost", "ISchedulingCommunication")) });				
 				_serviceHost.AddServiceEndpoint(typeof(ISchedulingCommunication),
 				  new NetNamedPipeBinding() { MaxBufferPoolSize = 20000000, MaxConnections = 20000000, MaxBufferSize = 20000000, MaxReceivedMessageSize = 20000000, CloseTimeout=new TimeSpan(0,3,0),OpenTimeout=new TimeSpan(0,3,0)},
 				  "Scheduler");
@@ -48,7 +40,6 @@ namespace Edge.Processes.SchedulingHost
 				_scheulingCommunication.Init();
 			}
 		}
-
 		protected override void OnPause()
 		{
 			_scheulingCommunication.Stop();
@@ -57,24 +48,10 @@ namespace Edge.Processes.SchedulingHost
 		{
 			_scheulingCommunication.Start();
 		}
-
-		void LegacyInstance_ChildServiceRequested(object sender, Core.Services.ServiceRequestedEventArgs e)
-		{
-			throw new NotImplementedException();
-		}
-
-		void LegacyInstance_StateChanged(object sender, Core.Services.ServiceStateChangedEventArgs e)
-		{
-			throw new NotImplementedException();
-		}
-
 		protected override void OnStop()
 		{
 			_scheulingCommunication.End();
-
-		}
-
-		
+		}		
 	}
 	
 }
