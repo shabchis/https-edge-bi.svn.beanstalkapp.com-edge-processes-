@@ -15,8 +15,6 @@ namespace Edge.Processes.SchedulingHost
 	{
 		ServiceHost _wcfHost;
 		Scheduler _scheduler;
-
-
 		public void Start()
 		{
 			_wcfHost = new ServiceHost(this);
@@ -25,16 +23,7 @@ namespace Edge.Processes.SchedulingHost
 		public Listener(Scheduler scheduler)
 		{
 			_scheduler = scheduler;
-
-
 		}
-
-
-		public void BuildSchedule()
-		{
-			throw new NotImplementedException();
-		}
-
 		public bool AddToSchedule(string serviceName, int accountID, DateTime targetTime, Edge.Core.SettingsCollection options)
 		{
 			bool respond = true;
@@ -50,17 +39,12 @@ namespace Edge.Processes.SchedulingHost
 						activeServiceElement.Options[option] = options[option];
 				}
 				ServiceElement serviceElement = EdgeServicesConfiguration.Current.Services[serviceName];
-
 				//base configuration;
 				baseConfiguration.Name = serviceElement.Name;
 				baseConfiguration.MaxConcurrent = serviceElement.MaxInstances;
 				baseConfiguration.MaxCuncurrentPerProfile = serviceElement.MaxInstancesPerAccount;
-
-
 				//configuration per profile
-
-				myServiceConfiguration = new ServiceConfiguration();
-				
+				myServiceConfiguration = new ServiceConfiguration();				
 				myServiceConfiguration.Name = activeServiceElement.Name;
 				if (activeServiceElement.Options.ContainsKey("ServicePriority"))
 					myServiceConfiguration.priority = int.Parse(activeServiceElement.Options["ServicePriority"]);
@@ -92,16 +76,12 @@ namespace Edge.Processes.SchedulingHost
 			{
 				respond = false;
 				Edge.Core.Utilities.Log.Write("AddManualServiceListner", ex.Message, ex, Edge.Core.Utilities.LogMessageType.Error);
-			
-
-
 			}
 
 
 
 			return respond;
 		}
-
 		public bool FormAddToSchedule(string serviceName, int accountID, DateTime targetTime, Edge.Core.SettingsCollection options, ServicePriority servicePriority)
 		{
 			bool respond = true;
@@ -121,8 +101,6 @@ namespace Edge.Processes.SchedulingHost
 				baseConfiguration.Name = serviceElement.Name;
 				baseConfiguration.MaxConcurrent = serviceElement.MaxInstances;
 				baseConfiguration.MaxCuncurrentPerProfile = serviceElement.MaxInstancesPerAccount;
-
-
 				//configuration per profile
 				myServiceConfiguration = new ServiceConfiguration();
 				myServiceConfiguration.Name = activeServiceElement.Name;
@@ -157,12 +135,7 @@ namespace Edge.Processes.SchedulingHost
 			{
 				respond = false;
 				Edge.Core.Utilities.Log.Write("AddManualServiceListner", ex.Message, ex, Edge.Core.Utilities.LogMessageType.Error);
-
-
 			}
-
-
-
 			return respond;
 		}
 		public bool FormAddToSchedule(ActiveServiceElement activeServiceElement, AccountElement account, DateTime targetTime, Edge.Core.SettingsCollection options, ServicePriority servicePriority)
@@ -176,19 +149,14 @@ namespace Edge.Processes.SchedulingHost
 			{
 				foreach (string option in options.Keys)
 					activeServiceElement.Options[option] = options[option];
-			}
-				
+			}				
 			//ServiceElement serviceElement = EdgeServicesConfiguration.Current.Services[activeServiceElement.Name];
-
 			//base configuration;
 			baseConfiguration.Name = activeServiceElement.Name;
 			baseConfiguration.MaxConcurrent = activeServiceElement.MaxInstances;
 			baseConfiguration.MaxCuncurrentPerProfile = activeServiceElement.MaxInstancesPerAccount;
-		  
-
 			//configuration per profile
-			myServiceConfiguration = new ServiceConfiguration();
-			
+			myServiceConfiguration = new ServiceConfiguration();			
 			myServiceConfiguration.Name = activeServiceElement.Name;
 			myServiceConfiguration.priority = (int)servicePriority;
 			if (activeServiceElement.Options.ContainsKey("ServicePriority"))
@@ -223,8 +191,6 @@ namespace Edge.Processes.SchedulingHost
 			{
 				respond = false;
 				Edge.Core.Utilities.Log.Write("AddManualServiceListner", ex.Message, ex, Edge.Core.Utilities.LogMessageType.Error);
-
-
 			}
 			return respond;
 		}
