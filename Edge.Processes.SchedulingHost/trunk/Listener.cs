@@ -13,16 +13,21 @@ namespace Edge.Processes.SchedulingHost
 	[ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, ConcurrencyMode = ConcurrencyMode.Single)]
 	public class Listener : IScheduleManager, IDisposable
 	{
+		#region members
 		ServiceHost _wcfHost;
 		Scheduler _scheduler;
+		#endregion	
+		#region ctor
+		public Listener(Scheduler scheduler)
+		{
+			_scheduler = scheduler;
+		}
+		#endregion
+		#region public methods
 		public void Start()
 		{
 			_wcfHost = new ServiceHost(this);
 			_wcfHost.Open();
-		}
-		public Listener(Scheduler scheduler)
-		{
-			_scheduler = scheduler;
 		}
 		public bool AddToSchedule(string serviceName, int accountID, DateTime targetTime, Edge.Core.SettingsCollection options)
 		{
@@ -199,5 +204,11 @@ namespace Edge.Processes.SchedulingHost
 			if (_wcfHost != null)
 				((IDisposable)_wcfHost).Dispose();
 		}
+		#endregion
+		#region IScheduleManager Members
+		public void BuildSchedule()
+		{			
+		}
+		#endregion
 	}
 }
