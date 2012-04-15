@@ -71,12 +71,12 @@ namespace Edge.Processes.SchedulingHost
 				foreach (var callBack in _callBacks)
 				{
 					try
-					{
+					{						
 						callBack.ScheduleCreated(instancesInfo);
 					}
 					catch (Exception ex)
 					{
-						Log.Write(ex.Message, ex, LogMessageType.Warning);
+						Log.Write("SchedulingHost", ex.Message, ex, LogMessageType.Warning);
 					}
 				}
 			}
@@ -109,8 +109,7 @@ namespace Edge.Processes.SchedulingHost
 					}
 					catch (Exception ex)
 					{
-
-						Log.Write(ex.Message, ex, LogMessageType.Warning);
+						Log.Write("SchedulingHost", ex.Message, ex, LogMessageType.Warning);
 					}
 				}
 			}
@@ -152,7 +151,7 @@ namespace Edge.Processes.SchedulingHost
 						}
 						catch (Exception ex)
 						{
-							Log.Write(ex.Message, ex, LogMessageType.Warning);
+							Log.Write("SchedulingHost", ex.Message, ex, LogMessageType.Warning);
 						}
 					}
 				}
@@ -174,7 +173,15 @@ namespace Edge.Processes.SchedulingHost
 				OutcomeInfo.ActualEndTime = instance.TimeEnded;
 				OutcomeInfo.Progress = 100;
 				foreach (var callBack in _callBacks)
-					callBack.InstanceEvent(OutcomeInfo);
+					try
+					{
+						callBack.InstanceEvent(OutcomeInfo);
+					}
+					catch (Exception ex)
+					{
+						Log.Write("SchedulingHost", ex.Message, ex, LogMessageType.Warning);
+					}
+					
 				_scheduler.Schedule(true);
 			}
 			else
@@ -204,7 +211,7 @@ namespace Edge.Processes.SchedulingHost
 			_scheduler.Start();
 		}
 		public void Subscribe()
-		{
+		{			
 			_callBacks.Add(OperationContext.Current.GetCallbackChannel<ICallBack>());
 		}
 		public legacy.IsAlive IsAlive(Guid guid)
