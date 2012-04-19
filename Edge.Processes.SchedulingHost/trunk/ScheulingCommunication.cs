@@ -7,6 +7,7 @@ using Edge.Core.Scheduling;
 using Edge.Core.Scheduling.Objects;
 using legacy = Edge.Core.Services;
 using Edge.Core.Utilities;
+using System.Data.SqlClient;
 
 
 namespace Edge.Processes.SchedulingHost
@@ -21,6 +22,8 @@ namespace Edge.Processes.SchedulingHost
 		legacy.IsAlive IsAlive(Guid guid);
 		[OperationContract]
 		void Abort(Guid guid);
+		[OperationContract]
+		void ResetUnEnded();
 	}
 	[ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
 	public class ScheulingCommunication : ISchedulingCommunication
@@ -243,6 +246,12 @@ namespace Edge.Processes.SchedulingHost
 			}
 
 		}
+		public void ResetUnEnded()
+		{
+			_scheduler.RestUnEnded();
+		}
+
+		
 	}	
 	public interface ICallBack
 	{
