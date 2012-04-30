@@ -8,6 +8,7 @@ using Edge.Core.Scheduling.Objects;
 using legacy = Edge.Core.Services;
 using Edge.Core.Utilities;
 using System.Data.SqlClient;
+using Edge.Core.Configuration;
 
 
 namespace Edge.Processes.SchedulingHost
@@ -24,6 +25,11 @@ namespace Edge.Processes.SchedulingHost
 		void Abort(Guid guid);
 		[OperationContract]
 		void ResetUnEnded();
+		[OperationContract]
+		void AddUnplanned();
+		[OperationContract]
+		List<AccounServiceInformation> GetServicesConfigurations();
+
 	}
 	[ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
 	public class ScheulingCommunication : ISchedulingCommunication
@@ -52,7 +58,7 @@ namespace Edge.Processes.SchedulingHost
 				{
 					LegacyInstanceGuid = SchedInfo.Value.LegacyInstance.Guid,
 					AccountID = SchedInfo.Key.profileID,
-					DayCode = date,
+					TargetPeriod = date,
 					InstanceID = SchedInfo.Value.LegacyInstance.InstanceID.ToString(),
 					Outcome = SchedInfo.Value.LegacyInstance.Outcome,
 					SchdeuleStartTime = SchedInfo.Value.StartTime,
@@ -74,7 +80,7 @@ namespace Edge.Processes.SchedulingHost
 				foreach (var callBack in _callBacks)
 				{
 					try
-					{						
+					{
 						callBack.ScheduleCreated(instancesInfo);
 					}
 					catch (Exception ex)
@@ -184,7 +190,7 @@ namespace Edge.Processes.SchedulingHost
 					{
 						Log.Write("SchedulingHost", ex.Message, ex, LogMessageType.Warning);
 					}
-					
+
 				_scheduler.Schedule(true);
 			}
 			else
@@ -214,7 +220,7 @@ namespace Edge.Processes.SchedulingHost
 			_scheduler.Start();
 		}
 		public void Subscribe()
-		{			
+		{
 			_callBacks.Add(OperationContext.Current.GetCallbackChannel<ICallBack>());
 		}
 		public legacy.IsAlive IsAlive(Guid guid)
@@ -251,8 +257,30 @@ namespace Edge.Processes.SchedulingHost
 			_scheduler.RestUnEnded();
 		}
 
-		
-	}	
+
+
+		#region ISchedulingCommunication Members
+
+
+		public void AddUnplanned()
+		{
+			throw new NotImplementedException();
+		}
+
+		public List<AccounServiceInformation> GetServicesConfigurations()
+		{
+			return _scheduler.GetServicesConfigurations();
+		}
+
+		#endregion
+
+		#region ISchedulingCommunication Members
+
+
+
+
+		#endregion
+	}
 	public interface ICallBack
 	{
 		[OperationContract(IsOneWay = true)]
