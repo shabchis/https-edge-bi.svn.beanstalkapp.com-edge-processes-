@@ -9,6 +9,8 @@ using legacy = Edge.Core.Services;
 using Edge.Core.Utilities;
 using System.Data.SqlClient;
 using Edge.Core.Configuration;
+using Edge.Core.Services;
+using System.Threading;
 
 
 namespace Edge.Processes.SchedulingHost
@@ -20,13 +22,13 @@ namespace Edge.Processes.SchedulingHost
 		[OperationContract]
 		void Subscribe();
 		[OperationContract]
-		legacy.IsAlive IsAlive(Guid guid);
+		legacy.IsAlive IsAlive(Guid guid);		
 		[OperationContract]
 		void Abort(Guid guid);
 		[OperationContract]
 		void ResetUnEnded();
 		[OperationContract]
-		void AddUnplanned();
+		Guid AddUnplanedService(int accountID, string serviceName, Dictionary<string, string> options, DateTime targetDateTime);
 		[OperationContract]
 		List<AccounServiceInformation> GetServicesConfigurations();
 
@@ -37,15 +39,15 @@ namespace Edge.Processes.SchedulingHost
 		private Scheduler _scheduler;
 		private Listener _listener;
 		private List<ICallBack> _callBacks = new List<ICallBack>();
-		private Dictionary<Guid, ServiceInstanceInfo> _scheduledServices = new Dictionary<Guid, ServiceInstanceInfo>();
+		private Dictionary<Guid, Edge.Core.Scheduling.Objects.ServiceInstanceInfo> _scheduledServices = new Dictionary<Guid, Edge.Core.Scheduling.Objects.ServiceInstanceInfo>();
 
 		#region events
 		void _scheduler_NewScheduleCreatedEvent(object sender, EventArgs e)
 		{
 			ScheduledInformationEventArgs ee = (ScheduledInformationEventArgs)e;
-			ServiceInstanceInfo[] instancesInfo = new ServiceInstanceInfo[ee.ScheduleInformation.Count];
+			Edge.Core.Scheduling.Objects.ServiceInstanceInfo[] instancesInfo = new Edge.Core.Scheduling.Objects.ServiceInstanceInfo[ee.ScheduleInformation.Count];
 			int index = 0;
-			foreach (KeyValuePair<SchedulingData, ServiceInstance> SchedInfo in ee.ScheduleInformation)
+			foreach (KeyValuePair<SchedulingData, Edge.Core.Scheduling.Objects.ServiceInstance> SchedInfo in ee.ScheduleInformation)
 			{
 				string date;
 				if (SchedInfo.Value.LegacyInstance.Configuration.Options.ContainsKey("Date"))
@@ -54,7 +56,7 @@ namespace Edge.Processes.SchedulingHost
 					date = SchedInfo.Value.LegacyInstance.Configuration.Options["TargetPeriod"];
 				else
 					date = string.Empty;
-				instancesInfo[index] = new ServiceInstanceInfo()
+				instancesInfo[index] = new Edge.Core.Scheduling.Objects.ServiceInstanceInfo()
 				{
 					LegacyInstanceGuid = SchedInfo.Value.LegacyInstance.Guid,
 					AccountID = SchedInfo.Key.profileID,
@@ -108,7 +110,7 @@ namespace Edge.Processes.SchedulingHost
 			double progress = instance.Progress * 100;
 			if (_scheduledServices.ContainsKey(instance.Guid))
 			{
-				ServiceInstanceInfo instanceInfo = _scheduledServices[instance.Guid];
+				Edge.Core.Scheduling.Objects.ServiceInstanceInfo instanceInfo = _scheduledServices[instance.Guid];
 				instanceInfo.Progress = progress;
 				foreach (var callBack in _callBacks)
 				{
@@ -148,7 +150,7 @@ namespace Edge.Processes.SchedulingHost
 				if (_scheduledServices.ContainsKey(instance.Guid))
 				{
 
-					ServiceInstanceInfo stateInfo = _scheduledServices[instance.Guid];
+					Edge.Core.Scheduling.Objects.ServiceInstanceInfo stateInfo = _scheduledServices[instance.Guid];
 					stateInfo.State = e.StateAfter;
 					if (e.StateAfter == legacy.ServiceState.Ready)
 						stateInfo.ActualStartTime = instance.TimeStarted;
@@ -177,7 +179,7 @@ namespace Edge.Processes.SchedulingHost
 			legacy.ServiceInstance instance = (Edge.Core.Services.ServiceInstance)sender;
 			if (_scheduledServices.ContainsKey(instance.Guid))
 			{
-				ServiceInstanceInfo OutcomeInfo = _scheduledServices[instance.Guid];
+				Edge.Core.Scheduling.Objects.ServiceInstanceInfo OutcomeInfo = _scheduledServices[instance.Guid];
 				OutcomeInfo.Outcome = instance.Outcome;
 				OutcomeInfo.ActualEndTime = instance.TimeEnded;
 				OutcomeInfo.Progress = 100;
@@ -197,6 +199,7 @@ namespace Edge.Processes.SchedulingHost
 				throw new Exception("LO agioni");
 		}
 		#endregion
+		#region methods
 		internal void Stop()
 		{
 			_scheduler.Stop();
@@ -223,17 +226,21 @@ namespace Edge.Processes.SchedulingHost
 		{
 			_callBacks.Add(OperationContext.Current.GetCallbackChannel<ICallBack>());
 		}
+		public legacy.IsAlive GetStatus(string guid)
+		{
+			return IsAlive(Guid.Parse(guid));
+		}
 		public legacy.IsAlive IsAlive(Guid guid)
 		{
 			try
 			{
-				legacy.ServiceInstance instance = _scheduler.GetInstance(guid);
-				return instance.IsAlive();
+				return _scheduler.IsAlive(guid);
+				
 			}
 			catch (Exception ex)
 			{
 
-				return new legacy.IsAlive() { OutCome = ex.Message };
+				return new legacy.IsAlive() { State=ex.Message };
 			}
 
 
@@ -256,37 +263,68 @@ namespace Edge.Processes.SchedulingHost
 		{
 			_scheduler.RestUnEnded();
 		}
-
-
-
-		#region ISchedulingCommunication Members
-
-
-		public void AddUnplanned()
-		{
-			throw new NotImplementedException();
-		}
-
 		public List<AccounServiceInformation> GetServicesConfigurations()
 		{
 			return _scheduler.GetServicesConfigurations();
 		}
+		public Guid AddUnplanedService(int accountID, string serviceName, Dictionary<string, string> options, DateTime targetDateTime)
+		{
+			
+			Guid guid;			
+			AccountElement accountElement = EdgeServicesConfiguration.Current.Accounts.GetAccount(accountID);
+			AccountServiceElement accountServiceElement = accountElement.Services[serviceName];
+			ActiveServiceElement activeServiceElement=new ActiveServiceElement(accountServiceElement);
+			ServiceConfiguration myServiceConfiguration = new ServiceConfiguration();
+			ServiceConfiguration baseConfiguration = new ServiceConfiguration();
+			if (options != null)
+			{
+				foreach (string option in options.Keys)
+					activeServiceElement.Options[option] = options[option];
+			}
+			baseConfiguration.Name = activeServiceElement.Name;
+			baseConfiguration.MaxConcurrent = activeServiceElement.MaxInstances;
+			baseConfiguration.MaxCuncurrentPerProfile = activeServiceElement.MaxInstancesPerAccount;
 
-		#endregion
+			myServiceConfiguration.Name = activeServiceElement.Name;
+			myServiceConfiguration.MaxConcurrent = (activeServiceElement.MaxInstances == 0) ? 9999 : activeServiceElement.MaxInstances;
+			myServiceConfiguration.MaxCuncurrentPerProfile = (activeServiceElement.MaxInstancesPerAccount == 0) ? 9999 : activeServiceElement.MaxInstancesPerAccount;
+			myServiceConfiguration.LegacyConfiguration = activeServiceElement;
 
-		#region ISchedulingCommunication Members
+			myServiceConfiguration.SchedulingRules.Add(new SchedulingRule()
+			{
+				Scope = SchedulingScope.UnPlanned,
+				SpecificDateTime = targetDateTime,
+				MaxDeviationAfter = new TimeSpan(0, 0, 120, 0, 0),
+				Hours = new List<TimeSpan>(),
+				GuidForUnplaned = Guid.NewGuid()
+			});
+			guid=myServiceConfiguration.SchedulingRules[0].GuidForUnplaned;
+			myServiceConfiguration.SchedulingRules[0].Hours.Add(new TimeSpan(0, 0, 0, 0));
+			myServiceConfiguration.BaseConfiguration = baseConfiguration;
+			Profile profile = new Profile()
+			{
+				ID = accountElement.ID,
+				Name = accountElement.Name,
+				Settings = new Dictionary<string, object>()
+			};
+			profile.Settings.Add("AccountID", accountElement.ID.ToString());
+			myServiceConfiguration.SchedulingProfile = profile;
+			
+			
+			_scheduler.AddNewServiceToSchedule(myServiceConfiguration);
+			return guid;
+			
 
-
-
+		}
 
 		#endregion
 	}
 	public interface ICallBack
 	{
 		[OperationContract(IsOneWay = true)]
-		void ScheduleCreated(ServiceInstanceInfo[] scheduleAndStateInfo);
+		void ScheduleCreated(Edge.Core.Scheduling.Objects.ServiceInstanceInfo[] scheduleAndStateInfo);
 
 		[OperationContract(IsOneWay = true)]
-		void InstanceEvent(ServiceInstanceInfo StateOutcomerInfo);
+		void InstanceEvent(Edge.Core.Scheduling.Objects.ServiceInstanceInfo StateOutcomerInfo);
 	}
 }

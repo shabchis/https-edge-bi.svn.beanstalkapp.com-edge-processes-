@@ -171,6 +171,7 @@
     <Compile Include="Host.Designer.cs">
       <DependentUpon>Host.cs</DependentUpon>
     </Compile>
+    <Compile Include="ImporterServiceTester.cs" />
     <Compile Include="Listener.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>
