@@ -9,10 +9,11 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Edge.BI")]
-[assembly: AssemblyProduct("Edge Directory Watcher")]
-[assembly: AssemblyCopyright("Copyright ©  2011")]
+[assembly: AssemblyProduct("Edge")]
+[assembly: AssemblyCopyright("Copyright © 2011")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
+[assembly: log4net.Config.XmlConfigurator(Watch = true)]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 
@@ -31,6 +32,6 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
-// [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("2.9.1.21")]
+[assembly: AssemblyFileVersion("2.9.1.21")]
+

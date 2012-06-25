@@ -97,60 +97,6 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DataStreams">
-      <HintPath>bin\DebubNewScheduling\DataStreams.dll</HintPath>
-    </Reference>
-    <Reference Include="Edge.Data.Pipeline">
-      <HintPath>bin\DebubNewScheduling\Edge.Data.Pipeline.dll</HintPath>
-    </Reference>
-    <Reference Include="Edge.Services.AdMetrics">
-      <HintPath>bin\DebubNewScheduling\Edge.Services.AdMetrics.dll</HintPath>
-    </Reference>
-    <Reference Include="Edge.Services.AdMetrics.Validations">
-      <HintPath>bin\DebubNewScheduling\Edge.Services.AdMetrics.Validations.dll</HintPath>
-    </Reference>
-    <Reference Include="Edge.Services.BackOffice.Generic">
-      <HintPath>bin\DebubNewScheduling\Edge.Services.BackOffice.Generic.dll</HintPath>
-    </Reference>
-    <Reference Include="Edge.Services.Facebook.GraphApi">
-      <HintPath>bin\DebubNewScheduling\Edge.Services.Facebook.GraphApi.dll</HintPath>
-    </Reference>
-    <Reference Include="Edge.Services.Facebook.UpdateCampaignStatus">
-      <HintPath>bin\DebubNewScheduling\Edge.Services.Facebook.UpdateCampaignStatus.dll</HintPath>
-    </Reference>
-    <Reference Include="Edge.Services.FTP">
-      <HintPath>bin\DebubNewScheduling\Edge.Services.FTP.dll</HintPath>
-    </Reference>
-    <Reference Include="Edge.Services.Google.Analytics">
-      <HintPath>bin\DebubNewScheduling\Edge.Services.Google.Analytics.dll</HintPath>
-    </Reference>
-    <Reference Include="Edge.Services.Metrics.Validations">
-      <HintPath>bin\DebubNewScheduling\Edge.Services.Metrics.Validations.dll</HintPath>
-    </Reference>
-    <Reference Include="Edge.Services.Microsoft.AdCenter">
-      <HintPath>bin\DebubNewScheduling\Edge.Services.Microsoft.AdCenter.dll</HintPath>
-    </Reference>
-    <Reference Include="Edge.Services.SegmentMetrics">
-      <HintPath>bin\DebubNewScheduling\Edge.Services.SegmentMetrics.dll</HintPath>
-    </Reference>
-    <Reference Include="Edge.Services.SegmentMetrics.Validations">
-      <HintPath>bin\DebubNewScheduling\Edge.Services.SegmentMetrics.Validations.dll</HintPath>
-    </Reference>
-    <Reference Include="Edge.Services.SqlServer">
-      <HintPath>bin\DebubNewScheduling\Edge.Services.SqlServer.dll</HintPath>
-    </Reference>
-    <Reference Include="GotDotNet.XPath">
-      <HintPath>bin\DebubNewScheduling\GotDotNet.XPath.dll</HintPath>
-    </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib">
-      <HintPath>bin\DebubNewScheduling\ICSharpCode.SharpZipLib.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>bin\DebubNewScheduling\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="Ricciolo.Controls.TreeListView">
-      <HintPath>..\..\(third party)\WPF\Ricciolo.Controls.TreeListView\lib\Ricciolo.Controls.TreeListView.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Configuration.Install" />
@@ -193,13 +139,17 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Framework\Edge.Core.Branch\Edge.Core.csproj">
+    <ProjectReference Include="..\..\..\edge-framework\Edge.Core.Scheduling\trunk\Edge.Core.Scheduling.csproj">
+      <Project>{E700E7AA-08B7-44C3-8889-ACB4FAF92C90}</Project>
+      <Name>Edge.Core.Scheduling</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\edge-framework\Edge.Core\trunk\Edge.Core.csproj">
       <Project>{AD4B53AD-B28A-4E90-9483-D2F7C8E6D436}</Project>
       <Name>Edge.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Framework\Edge.Core.Scheduling.Branch\Edge.Core.Scheduling.csproj">
-      <Project>{E700E7AA-08B7-44C3-8889-ACB4FAF92C90}</Project>
-      <Name>Edge.Core.Scheduling</Name>
+    <ProjectReference Include="..\..\..\edge-framework\Edge.Data.Pipeline\trunk\Edge.Data.Pipeline.csproj">
+      <Project>{53391A99-E8CA-4262-A8E0-5F05A1CC6608}</Project>
+      <Name>Edge.Data.Pipeline</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
