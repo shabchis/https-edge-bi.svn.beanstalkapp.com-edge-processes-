@@ -16,41 +16,48 @@ namespace Edge.Processes.SchedulingHost
 {
 	public partial class Host : ServiceBase
 	{
-		ScheulingCommunication _scheulingCommunication;
-		public ServiceHost _serviceHost = null;		
+		SchedulingHost _schedulingHost;
+		public ServiceHost _wcfHost = null;		
+		
 		public Host()
 		{
 			InitializeComponent();			
 		}
+		
 		public void Debug()
 		{
 			OnStart(null);
 		}
+		
 		protected override void OnStart(string[] args)
-		{//TODO: FROM CONFIGURATION
-			if (_serviceHost == null)
+		{
+			//TODO: FROM CONFIGURATION
+			if (_wcfHost == null)
 			{
-				if (_scheulingCommunication == null)
-					_scheulingCommunication = new ScheulingCommunication();
-				_serviceHost = new ServiceHost(_scheulingCommunication, new Uri[] { new Uri(AppSettings.Get("Edge.Processes.SchedulingHost", "ISchedulingCommunication")) });				
-				_serviceHost.AddServiceEndpoint(typeof(ISchedulingCommunication),
-				  new NetNamedPipeBinding() { MaxBufferPoolSize = 20000000, MaxConnections = 20000000, MaxBufferSize = 20000000, MaxReceivedMessageSize = 20000000, CloseTimeout=new TimeSpan(0,3,0),OpenTimeout=new TimeSpan(0,3,0)},
-				  "Scheduler");
-				_serviceHost.Open();
-				_scheulingCommunication.Init();
+				if (_schedulingHost == null)
+					_schedulingHost = new SchedulingHost();
+
+				_wcfHost = new ServiceHost(_schedulingHost);
+				_wcfHost.Open();
+
+				_schedulingHost.Init();
+				_schedulingHost.Start();
 			}
 		}
+		
 		protected override void OnPause()
 		{
-			_scheulingCommunication.Stop();
+			_schedulingHost.Stop();
 		}
+		
 		protected override void OnContinue()
 		{
-			_scheulingCommunication.Start();
+			_schedulingHost.Start();
 		}
+		
 		protected override void OnStop()
 		{
-			_scheulingCommunication.End();
+			_schedulingHost.End();
 		}		
 	}
 	
