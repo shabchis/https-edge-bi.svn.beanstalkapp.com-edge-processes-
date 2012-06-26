@@ -118,15 +118,15 @@ namespace Edge.Processes.SchedulingHost
 
 			myServiceConfiguration.SchedulingRules.Add(new SchedulingRule()
 			{
-				Scope = SchedulingScope.UnPlanned,
+				Scope = SchedulingScope.Unplanned,
 				SpecificDateTime = targetDateTime,
 				MaxDeviationAfter = new TimeSpan(0, 0, 120, 0, 0),
-				Hours = new List<TimeSpan>(),
+				Times = new List<TimeSpan>(),
 				GuidForUnplaned = Guid.NewGuid()
 			});
 
 			guid = myServiceConfiguration.SchedulingRules[0].GuidForUnplaned;
-			myServiceConfiguration.SchedulingRules[0].Hours.Add(new TimeSpan(0, 0, 0, 0));
+			myServiceConfiguration.SchedulingRules[0].Times.Add(new TimeSpan(0, 0, 0, 0));
 			
 			Profile profile = new Profile()
 			{
@@ -137,11 +137,8 @@ namespace Edge.Processes.SchedulingHost
 			profile.Settings.Add("AccountID", accountElement.ID.ToString());
 			myServiceConfiguration.SchedulingProfile = profile;
 
-
 			_scheduler.AddNewServiceToSchedule(myServiceConfiguration);
 			return guid;
-
-
 		}
 
 		//=================================================
@@ -167,7 +164,7 @@ namespace Edge.Processes.SchedulingHost
 				instancesInfo[index] = new Edge.Core.Scheduling.Objects.ServiceInstanceInfo()
 				{
 					LegacyInstanceGuid = SchedInfo.Value.LegacyInstance.Guid,
-					AccountID = SchedInfo.Key.profileID,
+					AccountID = SchedInfo.Key.ProfileID,
 					TargetPeriod = date,
 					InstanceID = SchedInfo.Value.LegacyInstance.InstanceID.ToString(),
 					Outcome = SchedInfo.Value.LegacyInstance.Outcome,

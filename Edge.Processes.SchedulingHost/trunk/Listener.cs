@@ -59,13 +59,13 @@ namespace Edge.Processes.SchedulingHost
 				//        //scheduling rules 
 				myServiceConfiguration.SchedulingRules.Add(new SchedulingRule()
 				{
-					Scope = SchedulingScope.UnPlanned,
+					Scope = SchedulingScope.Unplanned,
 					SpecificDateTime = DateTime.Now,
 					MaxDeviationAfter = new TimeSpan(0, 0, 45, 0, 0),
-					Hours = new List<TimeSpan>(),
+					Times = new List<TimeSpan>(),
 					GuidForUnplaned = Guid.NewGuid()
 				});
-				myServiceConfiguration.SchedulingRules[0].Hours.Add(new TimeSpan(0, 0, 0, 0));
+				myServiceConfiguration.SchedulingRules[0].Times.Add(new TimeSpan(0, 0, 0, 0));
 				myServiceConfiguration.BaseConfiguration = baseConfiguration;
 				Profile profile = new Profile()
 				{
@@ -118,13 +118,13 @@ namespace Edge.Processes.SchedulingHost
 				//        //scheduling rules 
 				myServiceConfiguration.SchedulingRules.Add(new SchedulingRule()
 				{
-					Scope = SchedulingScope.UnPlanned,
+					Scope = SchedulingScope.Unplanned,
 					SpecificDateTime = targetTime,
 					MaxDeviationAfter = new TimeSpan(0, 0, 45, 0, 0),
-					Hours = new List<TimeSpan>(),
+					Times = new List<TimeSpan>(),
 					GuidForUnplaned = Guid.NewGuid()
 				});
-				myServiceConfiguration.SchedulingRules[0].Hours.Add(new TimeSpan(0, 0, 0, 0));
+				myServiceConfiguration.SchedulingRules[0].Times.Add(new TimeSpan(0, 0, 0, 0));
 				myServiceConfiguration.BaseConfiguration = baseConfiguration;
 				Profile profile = new Profile()
 				{
@@ -172,13 +172,13 @@ namespace Edge.Processes.SchedulingHost
 			//        //scheduling rules 
 			myServiceConfiguration.SchedulingRules.Add(new SchedulingRule()
 			{
-				Scope = SchedulingScope.UnPlanned,
+				Scope = SchedulingScope.Unplanned,
 				SpecificDateTime = targetTime,
 				MaxDeviationAfter = new TimeSpan(0, 0, 120, 0, 0),
-				Hours = new List<TimeSpan>(),
+				Times = new List<TimeSpan>(),
 				GuidForUnplaned = Guid.NewGuid()
 			});
-			myServiceConfiguration.SchedulingRules[0].Hours.Add(new TimeSpan(0, 0, 0, 0));
+			myServiceConfiguration.SchedulingRules[0].Times.Add(new TimeSpan(0, 0, 0, 0));
 			myServiceConfiguration.BaseConfiguration = baseConfiguration;
 			Profile profile = new Profile()
 			{
