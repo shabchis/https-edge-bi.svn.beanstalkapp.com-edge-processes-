@@ -12,13 +12,16 @@ namespace Edge.Processes.SchedulingHost
 	{
 		protected override Core.Services.ServiceOutcome DoPipelineWork()
 		{
+			
 			//Initalize
 			Delivery = this.NewDelivery();
-			this.Delivery.Signature = Delivery.CreateSignature(String.Format("ImporterTest-[{0}]-[{1}]",
+			this.Delivery.Outputs.Add(new DeliveryOutput(){
+				Signature= Delivery.CreateSignature(String.Format("ImporterTest-[{0}]-[{1}]",
 			  this.Instance.AccountID,
-			  this.TargetPeriod.ToAbsolute()));
+			  this.TimePeriod.ToAbsolute())), Account=new Data.Objects.Account(){ ID=Instance.AccountID} ,
+			 Channel=new Data.Objects.Channel() { ID=-1}});
 
-			//this.HandleConflicts(importManager, DeliveryConflictBehavior.Ignore);
+		//	this.HandleConflicts(importManager, DeliveryConflictBehavior.Ignore);
 
 			ReportProgress(0.1);
 
@@ -26,15 +29,15 @@ namespace Edge.Processes.SchedulingHost
 			Thread.Sleep(10000);
 			ReportProgress(0.3);
 
-			//Proccess
+		//	Proccess
 			Thread.Sleep(10000);
 			ReportProgress(0.6);
 
 
-			//commit
+		//	commit
 			Thread.Sleep(10000);
 			ReportProgress(0.9);
-
+			
 			return Core.Services.ServiceOutcome.Success;
 
 

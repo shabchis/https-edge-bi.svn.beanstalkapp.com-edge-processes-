@@ -125,7 +125,7 @@
     <Compile Include="ProjectInstaller.Designer.cs">
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </Compile>
-    <Compile Include="ScheulingCommunication.cs" />
+    <Compile Include="SchedulingCommunication.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -139,7 +139,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\edge-framework\Edge.Core.Scheduling\trunk\Edge.Core.Scheduling.csproj">
+    <ProjectReference Include="..\..\..\edge-framework\Edge.Core.Scheduling\branches\2.9.1\Edge.Core.Scheduling.csproj">
       <Project>{E700E7AA-08B7-44C3-8889-ACB4FAF92C90}</Project>
       <Name>Edge.Core.Scheduling</Name>
     </ProjectReference>

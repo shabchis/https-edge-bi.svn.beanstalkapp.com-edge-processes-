@@ -30,7 +30,7 @@ namespace Edge.Processes.SchedulingHost
 		[OperationContract]
 		Guid AddUnplanedService(int accountID, string serviceName, Dictionary<string, string> options, DateTime targetDateTime);
 		[OperationContract]
-		List<AccounServiceInformation> GetServicesConfigurations();
+		List<AccountServiceInformation> GetServicesConfigurations();
 
 	}
 	[ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
@@ -263,7 +263,7 @@ namespace Edge.Processes.SchedulingHost
 		{
 			_scheduler.RestUnEnded();
 		}
-		public List<AccounServiceInformation> GetServicesConfigurations()
+		public List<AccountServiceInformation> GetServicesConfigurations()
 		{
 			return _scheduler.GetServicesConfigurations();
 		}
