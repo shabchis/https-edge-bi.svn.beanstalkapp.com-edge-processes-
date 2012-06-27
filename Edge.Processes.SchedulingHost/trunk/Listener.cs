@@ -60,7 +60,7 @@ namespace Edge.Processes.SchedulingHost
 				myServiceConfiguration.SchedulingRules.Add(new SchedulingRule()
 				{
 					Scope = SchedulingScope.Unplanned,
-					SpecificDateTime = DateTime.Now,
+					SpecificDateTime = targetTime,
 					MaxDeviationAfter = new TimeSpan(0, 0, 45, 0, 0),
 					Times = new List<TimeSpan>(),
 					GuidForUnplaned = Guid.NewGuid()

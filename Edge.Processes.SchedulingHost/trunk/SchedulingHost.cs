@@ -11,6 +11,7 @@ using System.Data.SqlClient;
 using Edge.Core.Configuration;
 using Edge.Core.Services;
 using System.Threading;
+using Newtonsoft.Json;
 
 
 namespace Edge.Processes.SchedulingHost
@@ -52,9 +53,14 @@ namespace Edge.Processes.SchedulingHost
 			_scheduler = null;
 		}
 
-		internal void Subscribe()
+		public void Subscribe()
 		{
 			_callBacks.Add(OperationContext.Current.GetCallbackChannel<ISchedulingHostSubscriber>());
+		}
+		public void UnSubscribe()
+		{
+			if (_callBacks != null && _callBacks.Contains(OperationContext.Current.GetCallbackChannel<ISchedulingHostSubscriber>()))
+				_callBacks.Remove(OperationContext.Current.GetCallbackChannel<ISchedulingHostSubscriber>());
 		}
 
 		public Legacy.IsAlive GetStatus(string guid)
@@ -127,7 +133,7 @@ namespace Edge.Processes.SchedulingHost
 
 			guid = myServiceConfiguration.SchedulingRules[0].GuidForUnplaned;
 			myServiceConfiguration.SchedulingRules[0].Times.Add(new TimeSpan(0, 0, 0, 0));
-			
+
 			Profile profile = new Profile()
 			{
 				ID = accountElement.ID,
@@ -176,6 +182,7 @@ namespace Edge.Processes.SchedulingHost
 					ServiceName = SchedInfo.Value.ServiceName,
 					State = SchedInfo.Value.LegacyInstance.State,
 					ScheduledID = SchedInfo.Value.ScheduledID,
+					Options=JsonConvert.SerializeObject(SchedInfo.Value.LegacyInstance.Configuration.Options),
 					ParentInstanceID = SchedInfo.Value.LegacyInstance.ParentInstance != null ? SchedInfo.Value.LegacyInstance.ParentInstance.Guid : Guid.Empty,
 					Progress = SchedInfo.Value.LegacyInstance.State == Legacy.ServiceState.Ended ? 100 : SchedInfo.Value.LegacyInstance.Progress
 				};
@@ -204,11 +211,13 @@ namespace Edge.Processes.SchedulingHost
 			{
 				serviceInstance.LegacyInstance.StateChanged += new EventHandler<Core.Services.ServiceStateChangedEventArgs>(LegacyInstance_StateChanged);
 				serviceInstance.LegacyInstance.ChildServiceRequested += new EventHandler<Core.Services.ServiceRequestedEventArgs>(LegacyInstance_ChildServiceRequested);
-				serviceInstance.LegacyInstance.ProgressReported += new EventHandler(LegacyInstance_ProgressReported);
 				serviceInstance.LegacyInstance.OutcomeReported += new EventHandler(instance_OutcomeReported);
+				serviceInstance.LegacyInstance.ProgressReported += new EventHandler(LegacyInstance_ProgressReported);
 				serviceInstance.LegacyInstance.Initialize();
 			}
 		}
+
+		
 		void LegacyInstance_ProgressReported(object sender, EventArgs e)
 		{
 			Legacy.ServiceInstance instance = (Edge.Core.Services.ServiceInstance)sender;
@@ -233,11 +242,7 @@ namespace Edge.Processes.SchedulingHost
 		void LegacyInstance_ChildServiceRequested(object sender, Core.Services.ServiceRequestedEventArgs e)
 		{
 			try
-			{
-				Legacy.ServiceInstance instance = (Legacy.ServiceInstance)sender;
-				e.RequestedService.ChildServiceRequested += new EventHandler<Legacy.ServiceRequestedEventArgs>(LegacyInstance_ChildServiceRequested);
-				e.RequestedService.StateChanged += new EventHandler<Legacy.ServiceStateChangedEventArgs>(LegacyInstance_StateChanged);
-				e.RequestedService.ProgressReported += new EventHandler(LegacyInstance_ProgressReported);
+			{				
 				_scheduler.AddChildServiceToSchedule(e.RequestedService);
 			}
 			catch (Exception ex)
@@ -250,15 +255,19 @@ namespace Edge.Processes.SchedulingHost
 			try
 			{
 				Legacy.ServiceInstance instance = (Edge.Core.Services.ServiceInstance)sender;
-				if (e.StateAfter == Legacy.ServiceState.Ready)
-					instance.Start();
+				instance.OutcomeReported += new EventHandler(instance_OutcomeReported);
+				
 				if (_scheduledServices.ContainsKey(instance.Guid))
 				{
 
 					Edge.Core.Scheduling.Objects.ServiceInstanceInfo stateInfo = _scheduledServices[instance.Guid];
-					stateInfo.State = e.StateAfter;
-					if (e.StateAfter == Legacy.ServiceState.Ready)
+					stateInfo.State = instance.State;
+					//if (e.StateAfter == Legacy.ServiceState.Ready)
+					if (instance.State==ServiceState.Ready)
+					{
 						stateInfo.ActualStartTime = instance.TimeStarted;
+						instance.Start();
+					}
 					foreach (var callBack in _callBacks)
 					{
 						try
@@ -273,6 +282,8 @@ namespace Edge.Processes.SchedulingHost
 				}
 				else
 					throw new Exception("lo agioni");
+				
+				
 			}
 			catch (Exception ex)
 			{
@@ -305,6 +316,12 @@ namespace Edge.Processes.SchedulingHost
 		}
 		//=================================================
 		#endregion
+
+
+
+
+
+
 	}
-	
+
 }
