@@ -47,14 +47,14 @@ namespace Edge.Processes.SchedulingHost
 				//base configuration;
 				baseConfiguration.Name = serviceElement.Name;
 				baseConfiguration.MaxConcurrent = serviceElement.MaxInstances;
-				baseConfiguration.MaxCuncurrentPerProfile = serviceElement.MaxInstancesPerAccount;
+				baseConfiguration.MaxConcurrentPerProfile = serviceElement.MaxInstancesPerAccount;
 				//configuration per profile
 				myServiceConfiguration = new ServiceConfiguration();				
 				myServiceConfiguration.Name = activeServiceElement.Name;
 				if (activeServiceElement.Options.ContainsKey("ServicePriority"))
-					myServiceConfiguration.priority = int.Parse(activeServiceElement.Options["ServicePriority"]);
+					myServiceConfiguration.Priority = int.Parse(activeServiceElement.Options["ServicePriority"]);
 				myServiceConfiguration.MaxConcurrent = (activeServiceElement.MaxInstances == 0) ? 9999 : activeServiceElement.MaxInstances;
-				myServiceConfiguration.MaxCuncurrentPerProfile = (activeServiceElement.MaxInstancesPerAccount == 0) ? 9999 : activeServiceElement.MaxInstancesPerAccount;
+				myServiceConfiguration.MaxConcurrentPerProfile = (activeServiceElement.MaxInstancesPerAccount == 0) ? 9999 : activeServiceElement.MaxInstancesPerAccount;
 				myServiceConfiguration.LegacyConfiguration = activeServiceElement;
 				//        //scheduling rules 
 				myServiceConfiguration.SchedulingRules.Add(new SchedulingRule()
@@ -63,7 +63,7 @@ namespace Edge.Processes.SchedulingHost
 					SpecificDateTime = targetTime,
 					MaxDeviationAfter = new TimeSpan(0, 0, 45, 0, 0),
 					Times = new List<TimeSpan>(),
-					GuidForUnplaned = Guid.NewGuid()
+					GuidForUnplanned = Guid.NewGuid()
 				});
 				myServiceConfiguration.SchedulingRules[0].Times.Add(new TimeSpan(0, 0, 0, 0));
 				myServiceConfiguration.BaseConfiguration = baseConfiguration;
@@ -105,15 +105,15 @@ namespace Edge.Processes.SchedulingHost
 				//base configuration;
 				baseConfiguration.Name = serviceElement.Name;
 				baseConfiguration.MaxConcurrent = serviceElement.MaxInstances;
-				baseConfiguration.MaxCuncurrentPerProfile = serviceElement.MaxInstancesPerAccount;
+				baseConfiguration.MaxConcurrentPerProfile = serviceElement.MaxInstancesPerAccount;
 				//configuration per profile
 				myServiceConfiguration = new ServiceConfiguration();
 				myServiceConfiguration.Name = activeServiceElement.Name;
-				myServiceConfiguration.priority = (int)servicePriority;
+				myServiceConfiguration.Priority = (int)servicePriority;
 				if (activeServiceElement.Options.ContainsKey("ServicePriority"))
-					myServiceConfiguration.priority = int.Parse(activeServiceElement.Options["ServicePriority"]);
+					myServiceConfiguration.Priority = int.Parse(activeServiceElement.Options["ServicePriority"]);
 				myServiceConfiguration.MaxConcurrent = (activeServiceElement.MaxInstances == 0) ? 9999 : activeServiceElement.MaxInstances;
-				myServiceConfiguration.MaxCuncurrentPerProfile = (activeServiceElement.MaxInstancesPerAccount == 0) ? 9999 : activeServiceElement.MaxInstancesPerAccount;
+				myServiceConfiguration.MaxConcurrentPerProfile = (activeServiceElement.MaxInstancesPerAccount == 0) ? 9999 : activeServiceElement.MaxInstancesPerAccount;
 				myServiceConfiguration.LegacyConfiguration = activeServiceElement;
 				//        //scheduling rules 
 				myServiceConfiguration.SchedulingRules.Add(new SchedulingRule()
@@ -122,7 +122,7 @@ namespace Edge.Processes.SchedulingHost
 					SpecificDateTime = targetTime,
 					MaxDeviationAfter = new TimeSpan(0, 0, 45, 0, 0),
 					Times = new List<TimeSpan>(),
-					GuidForUnplaned = Guid.NewGuid()
+					GuidForUnplanned = Guid.NewGuid()
 				});
 				myServiceConfiguration.SchedulingRules[0].Times.Add(new TimeSpan(0, 0, 0, 0));
 				myServiceConfiguration.BaseConfiguration = baseConfiguration;
@@ -159,15 +159,15 @@ namespace Edge.Processes.SchedulingHost
 			//base configuration;
 			baseConfiguration.Name = activeServiceElement.Name;
 			baseConfiguration.MaxConcurrent = activeServiceElement.MaxInstances;
-			baseConfiguration.MaxCuncurrentPerProfile = activeServiceElement.MaxInstancesPerAccount;
+			baseConfiguration.MaxConcurrentPerProfile = activeServiceElement.MaxInstancesPerAccount;
 			//configuration per profile
 			myServiceConfiguration = new ServiceConfiguration();			
 			myServiceConfiguration.Name = activeServiceElement.Name;
-			myServiceConfiguration.priority = (int)servicePriority;
+			myServiceConfiguration.Priority = (int)servicePriority;
 			if (activeServiceElement.Options.ContainsKey("ServicePriority"))
-				myServiceConfiguration.priority = int.Parse(activeServiceElement.Options["ServicePriority"]);
+				myServiceConfiguration.Priority = int.Parse(activeServiceElement.Options["ServicePriority"]);
 			myServiceConfiguration.MaxConcurrent = (activeServiceElement.MaxInstances == 0) ? 9999 : activeServiceElement.MaxInstances;
-			myServiceConfiguration.MaxCuncurrentPerProfile = (activeServiceElement.MaxInstancesPerAccount == 0) ? 9999 : activeServiceElement.MaxInstancesPerAccount;
+			myServiceConfiguration.MaxConcurrentPerProfile = (activeServiceElement.MaxInstancesPerAccount == 0) ? 9999 : activeServiceElement.MaxInstancesPerAccount;
 			myServiceConfiguration.LegacyConfiguration = activeServiceElement;
 			//        //scheduling rules 
 			myServiceConfiguration.SchedulingRules.Add(new SchedulingRule()
@@ -176,7 +176,7 @@ namespace Edge.Processes.SchedulingHost
 				SpecificDateTime = targetTime,
 				MaxDeviationAfter = new TimeSpan(0, 0, 120, 0, 0),
 				Times = new List<TimeSpan>(),
-				GuidForUnplaned = Guid.NewGuid()
+				GuidForUnplanned = Guid.NewGuid()
 			});
 			myServiceConfiguration.SchedulingRules[0].Times.Add(new TimeSpan(0, 0, 0, 0));
 			myServiceConfiguration.BaseConfiguration = baseConfiguration;

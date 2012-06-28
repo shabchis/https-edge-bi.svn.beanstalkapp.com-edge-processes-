@@ -128,10 +128,10 @@ namespace Edge.Processes.SchedulingHost
 				SpecificDateTime = targetDateTime,
 				MaxDeviationAfter = new TimeSpan(0, 0, 120, 0, 0),
 				Times = new List<TimeSpan>(),
-				GuidForUnplaned = Guid.NewGuid()
+				GuidForUnplanned = Guid.NewGuid()
 			});
 
-			guid = myServiceConfiguration.SchedulingRules[0].GuidForUnplaned;
+			guid = myServiceConfiguration.SchedulingRules[0].GuidForUnplanned;
 			myServiceConfiguration.SchedulingRules[0].Times.Add(new TimeSpan(0, 0, 0, 0));
 
 			Profile profile = new Profile()
