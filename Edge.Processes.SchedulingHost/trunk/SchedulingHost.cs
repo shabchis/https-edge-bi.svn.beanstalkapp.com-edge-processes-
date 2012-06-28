@@ -143,7 +143,7 @@ namespace Edge.Processes.SchedulingHost
 			profile.Settings.Add("AccountID", accountElement.ID.ToString());
 			myServiceConfiguration.SchedulingProfile = profile;
 
-			_scheduler.AddNewServiceToSchedule(myServiceConfiguration);
+			_scheduler.AddServiceToSchedule(myServiceConfiguration);
 			return guid;
 		}
 

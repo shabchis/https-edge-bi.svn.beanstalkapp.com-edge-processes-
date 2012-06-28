@@ -75,7 +75,7 @@ namespace Edge.Processes.SchedulingHost
 				};
 				profile.Settings.Add("AccountID", accountID);
 				myServiceConfiguration.SchedulingProfile = profile;
-				_scheduler.AddNewServiceToSchedule(myServiceConfiguration);
+				_scheduler.AddServiceToSchedule(myServiceConfiguration);
 			}
 			catch (Exception ex)
 			{
@@ -134,7 +134,7 @@ namespace Edge.Processes.SchedulingHost
 				};
 				profile.Settings.Add("AccountID", accountID);
 				myServiceConfiguration.SchedulingProfile = profile;
-				_scheduler.AddNewServiceToSchedule(myServiceConfiguration);
+				_scheduler.AddServiceToSchedule(myServiceConfiguration);
 			}
 			catch (Exception ex)
 			{
@@ -189,7 +189,7 @@ namespace Edge.Processes.SchedulingHost
 			profile.Settings.Add("AccountID", account.ID.ToString());
 			myServiceConfiguration.SchedulingProfile = profile;
 		    
-			_scheduler.AddNewServiceToSchedule(myServiceConfiguration);
+			_scheduler.AddServiceToSchedule(myServiceConfiguration);
 			
 			}
 			catch (Exception ex)
