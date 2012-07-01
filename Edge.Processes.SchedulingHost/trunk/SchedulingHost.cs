@@ -115,18 +115,6 @@ namespace Edge.Processes.SchedulingHost
 			if (accountElement == null)
 				throw new Exception(String.Format("Account '{0}' not found in configuration.", accountID));
 
-			AccountServiceElement accountServiceElement = accountElement.Services[serviceName];
-			if (accountServiceElement == null)
-				throw new Exception(String.Format("Service '{0}' not found in account {1}.", serviceName, accountID));
-
-			ActiveServiceElement activeServiceElement = new ActiveServiceElement(accountServiceElement);
-			ServiceConfiguration myServiceConfiguration = ServiceConfiguration.FromLegacyConfiguration(activeServiceElement);
-
-			myServiceConfiguration.SchedulingRules.Add(SchedulingRule.CreateUnplanned());
-
-			guid = myServiceConfiguration.SchedulingRules[0].GuidForUnplanned;
-			myServiceConfiguration.SchedulingRules[0].Times.Add(new TimeSpan(0, 0, 0, 0));
-
 			Profile profile = new Profile()
 			{
 				ID = accountElement.ID,
@@ -134,6 +122,19 @@ namespace Edge.Processes.SchedulingHost
 				Settings = new Dictionary<string, object>()
 			};
 			profile.Settings.Add("AccountID", accountElement.ID.ToString());
+			AccountServiceElement accountServiceElement = accountElement.Services[serviceName];
+			if (accountServiceElement == null)
+				throw new Exception(String.Format("Service '{0}' not found in account {1}.", serviceName, accountID));
+
+			//ActiveServiceElement activeServiceElement = new ActiveServiceElement(accountServiceElement);
+			ServiceConfiguration myServiceConfiguration = ServiceConfiguration.FromLegacyConfiguration(accountServiceElement, _scheduler.GetServiceBaseConfiguration(accountServiceElement.Uses.Element.Name), profile);
+
+			myServiceConfiguration.SchedulingRules.Add(SchedulingRule.CreateUnplanned());
+
+			guid = myServiceConfiguration.SchedulingRules[0].GuidForUnplanned;
+			myServiceConfiguration.SchedulingRules[0].Times.Add(new TimeSpan(0, 0, 0, 0));
+
+
 			myServiceConfiguration.SchedulingProfile = profile;
 
 			_scheduler.AddServiceToSchedule(myServiceConfiguration);
@@ -175,7 +176,7 @@ namespace Edge.Processes.SchedulingHost
 					ServiceName = SchedInfo.Value.ServiceName,
 					State = SchedInfo.Value.LegacyInstance.State,
 					ScheduledID = SchedInfo.Value.ScheduledID,
-					Options=JsonConvert.SerializeObject(SchedInfo.Value.LegacyInstance.Configuration.Options),
+					Options = JsonConvert.SerializeObject(SchedInfo.Value.LegacyInstance.Configuration.Options),
 					ParentInstanceID = SchedInfo.Value.LegacyInstance.ParentInstance != null ? SchedInfo.Value.LegacyInstance.ParentInstance.Guid : Guid.Empty,
 					Progress = SchedInfo.Value.LegacyInstance.State == Legacy.ServiceState.Ended ? 100 : SchedInfo.Value.LegacyInstance.Progress
 				};
@@ -210,7 +211,7 @@ namespace Edge.Processes.SchedulingHost
 			}
 		}
 
-		
+
 		void LegacyInstance_ProgressReported(object sender, EventArgs e)
 		{
 			Legacy.ServiceInstance instance = (Edge.Core.Services.ServiceInstance)sender;
@@ -235,7 +236,7 @@ namespace Edge.Processes.SchedulingHost
 		void LegacyInstance_ChildServiceRequested(object sender, Core.Services.ServiceRequestedEventArgs e)
 		{
 			try
-			{				
+			{
 				_scheduler.AddChildServiceToSchedule(e.RequestedService);
 			}
 			catch (Exception ex)
@@ -249,14 +250,14 @@ namespace Edge.Processes.SchedulingHost
 			{
 				Legacy.ServiceInstance instance = (Edge.Core.Services.ServiceInstance)sender;
 				instance.OutcomeReported += new EventHandler(instance_OutcomeReported);
-				
+
 				if (_scheduledServices.ContainsKey(instance.Guid))
 				{
 
 					Edge.Core.Scheduling.Objects.ServiceInstanceInfo stateInfo = _scheduledServices[instance.Guid];
 					stateInfo.State = instance.State;
-					//if (e.StateAfter == Legacy.ServiceState.Ready)
-					if (instance.State==ServiceState.Ready)
+					if (e.StateAfter == Legacy.ServiceState.Ready)
+					//_scheduler.if (instance.State==ServiceState.Ready)
 					{
 						stateInfo.ActualStartTime = instance.TimeStarted;
 						instance.Start();
@@ -275,8 +276,8 @@ namespace Edge.Processes.SchedulingHost
 				}
 				else
 					throw new Exception("lo agioni");
-				
-				
+
+
 			}
 			catch (Exception ex)
 			{
@@ -293,6 +294,7 @@ namespace Edge.Processes.SchedulingHost
 				OutcomeInfo.ActualEndTime = instance.TimeEnded;
 				OutcomeInfo.Progress = 100;
 				foreach (var callBack in _callBacks)
+				{
 					try
 					{
 						callBack.InstanceEvent(OutcomeInfo);
@@ -301,6 +303,8 @@ namespace Edge.Processes.SchedulingHost
 					{
 						Log.Write("SchedulingHost", ex.Message, ex, LogMessageType.Warning);
 					}
+				}
+				_scheduler.CleandEndedUnplaned(instance);
 
 				_scheduler.Schedule(true);
 			}
