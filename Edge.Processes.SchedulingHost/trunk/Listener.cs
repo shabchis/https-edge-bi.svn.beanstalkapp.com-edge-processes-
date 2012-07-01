@@ -57,14 +57,7 @@ namespace Edge.Processes.SchedulingHost
 				myServiceConfiguration.MaxConcurrentPerProfile = (activeServiceElement.MaxInstancesPerAccount == 0) ? 9999 : activeServiceElement.MaxInstancesPerAccount;
 				myServiceConfiguration.LegacyConfiguration = activeServiceElement;
 				//        //scheduling rules 
-				myServiceConfiguration.SchedulingRules.Add(new SchedulingRule()
-				{
-					Scope = SchedulingScope.Unplanned,
-					SpecificDateTime = targetTime,
-					MaxDeviationAfter = new TimeSpan(0, 0, 45, 0, 0),
-					Times = new List<TimeSpan>(),
-					GuidForUnplanned = Guid.NewGuid()
-				});
+				myServiceConfiguration.SchedulingRules.Add(SchedulingRule.CreateUnplanned());
 				myServiceConfiguration.SchedulingRules[0].Times.Add(new TimeSpan(0, 0, 0, 0));
 				myServiceConfiguration.BaseConfiguration = baseConfiguration;
 				Profile profile = new Profile()
@@ -116,14 +109,7 @@ namespace Edge.Processes.SchedulingHost
 				myServiceConfiguration.MaxConcurrentPerProfile = (activeServiceElement.MaxInstancesPerAccount == 0) ? 9999 : activeServiceElement.MaxInstancesPerAccount;
 				myServiceConfiguration.LegacyConfiguration = activeServiceElement;
 				//        //scheduling rules 
-				myServiceConfiguration.SchedulingRules.Add(new SchedulingRule()
-				{
-					Scope = SchedulingScope.Unplanned,
-					SpecificDateTime = targetTime,
-					MaxDeviationAfter = new TimeSpan(0, 0, 45, 0, 0),
-					Times = new List<TimeSpan>(),
-					GuidForUnplanned = Guid.NewGuid()
-				});
+				myServiceConfiguration.SchedulingRules.Add(SchedulingRule.CreateUnplanned());
 				myServiceConfiguration.SchedulingRules[0].Times.Add(new TimeSpan(0, 0, 0, 0));
 				myServiceConfiguration.BaseConfiguration = baseConfiguration;
 				Profile profile = new Profile()
@@ -170,16 +156,8 @@ namespace Edge.Processes.SchedulingHost
 			myServiceConfiguration.MaxConcurrentPerProfile = (activeServiceElement.MaxInstancesPerAccount == 0) ? 9999 : activeServiceElement.MaxInstancesPerAccount;
 			myServiceConfiguration.LegacyConfiguration = activeServiceElement;
 			//        //scheduling rules 
-			myServiceConfiguration.SchedulingRules.Add(new SchedulingRule()
-			{
-				Scope = SchedulingScope.Unplanned,
-				SpecificDateTime = targetTime,
-				MaxDeviationAfter = new TimeSpan(0, 0, 120, 0, 0),
-				Times = new List<TimeSpan>(),
-				GuidForUnplanned = Guid.NewGuid()
-			});
-			myServiceConfiguration.SchedulingRules[0].Times.Add(new TimeSpan(0, 0, 0, 0));
-			myServiceConfiguration.BaseConfiguration = baseConfiguration;
+			myServiceConfiguration.SchedulingRules.Add(SchedulingRule.CreateUnplanned());
+			
 			Profile profile = new Profile()
 			{
 				ID = account.ID,

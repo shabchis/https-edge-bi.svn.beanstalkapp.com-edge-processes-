@@ -120,16 +120,9 @@ namespace Edge.Processes.SchedulingHost
 				throw new Exception(String.Format("Service '{0}' not found in account {1}.", serviceName, accountID));
 
 			ActiveServiceElement activeServiceElement = new ActiveServiceElement(accountServiceElement);
-			ServiceConfiguration myServiceConfiguration = ServiceConfiguration.FromLegacy(activeServiceElement, options);
+			ServiceConfiguration myServiceConfiguration = ServiceConfiguration.FromLegacyConfiguration(activeServiceElement);
 
-			myServiceConfiguration.SchedulingRules.Add(new SchedulingRule()
-			{
-				Scope = SchedulingScope.Unplanned,
-				SpecificDateTime = targetDateTime,
-				MaxDeviationAfter = new TimeSpan(0, 0, 120, 0, 0),
-				Times = new List<TimeSpan>(),
-				GuidForUnplanned = Guid.NewGuid()
-			});
+			myServiceConfiguration.SchedulingRules.Add(SchedulingRule.CreateUnplanned());
 
 			guid = myServiceConfiguration.SchedulingRules[0].GuidForUnplanned;
 			myServiceConfiguration.SchedulingRules[0].Times.Add(new TimeSpan(0, 0, 0, 0));
@@ -170,7 +163,7 @@ namespace Edge.Processes.SchedulingHost
 				instancesInfo[index] = new Edge.Core.Scheduling.Objects.ServiceInstanceInfo()
 				{
 					LegacyInstanceGuid = SchedInfo.Value.LegacyInstance.Guid,
-					AccountID = SchedInfo.Key.ProfileID,
+					AccountID = SchedInfo.Key.Profile.ID,
 					TargetPeriod = date,
 					InstanceID = SchedInfo.Value.LegacyInstance.InstanceID.ToString(),
 					Outcome = SchedInfo.Value.LegacyInstance.Outcome,
