@@ -87,7 +87,7 @@ namespace Edge.Processes.SchedulingHost
 			Legacy.ServiceInstance instance = null;
 			try
 			{
-				instance = _scheduler.GetInstance(guid);
+				instance = _scheduler.GetLegacyInstanceByGuid(guid);
 				instance.Abort();
 			}
 			catch (Exception ex)
@@ -99,7 +99,17 @@ namespace Edge.Processes.SchedulingHost
 
 		public void ResetUnEnded()
 		{
-			_scheduler.RestUnEnded();
+			using (SqlConnection SqlConnection = new SqlConnection(AppSettings.GetConnectionString(this, "System")))
+			{
+				SqlConnection.Open();
+				using (SqlCommand sqlCommand = new SqlCommand("ResetUnendedServices", SqlConnection))
+				{
+					sqlCommand.CommandType = System.Data.CommandType.StoredProcedure;
+					sqlCommand.ExecuteNonQuery();
+
+
+				}
+			}
 		}
 
 		public List<AccountServiceInformation> GetServicesConfigurations()
@@ -135,7 +145,7 @@ namespace Edge.Processes.SchedulingHost
 			myServiceConfiguration.SchedulingRules[0].Times.Add(new TimeSpan(0, 0, 0, 0));
 
 
-			myServiceConfiguration.SchedulingProfile = profile;
+			myServiceConfiguration.Profile = profile;
 
 			_scheduler.AddServiceToSchedule(myServiceConfiguration);
 			return guid;
@@ -152,7 +162,7 @@ namespace Edge.Processes.SchedulingHost
 			ScheduledInformationEventArgs ee = (ScheduledInformationEventArgs)e;
 			Edge.Core.Scheduling.Objects.ServiceInstanceInfo[] instancesInfo = new Edge.Core.Scheduling.Objects.ServiceInstanceInfo[ee.ScheduleInformation.Count];
 			int index = 0;
-			foreach (KeyValuePair<SchedulingData, Edge.Core.Scheduling.Objects.ServiceInstance> SchedInfo in ee.ScheduleInformation)
+			foreach (KeyValuePair<SchedulingRequest, Edge.Core.Scheduling.Objects.ServiceInstance> SchedInfo in ee.ScheduleInformation)
 			{
 				string date;
 				if (SchedInfo.Value.LegacyInstance.Configuration.Options.ContainsKey("Date"))
@@ -168,9 +178,9 @@ namespace Edge.Processes.SchedulingHost
 					TargetPeriod = date,
 					InstanceID = SchedInfo.Value.LegacyInstance.InstanceID.ToString(),
 					Outcome = SchedInfo.Value.LegacyInstance.Outcome,
-					SchdeuleStartTime = SchedInfo.Value.StartTime,
-					ScheduleEndTime = SchedInfo.Value.EndTime,
-					BaseScheduleTime = SchedInfo.Key.TimeToRun,
+					SchdeuleStartTime = SchedInfo.Value.ExpectedStartTime,
+					ScheduleEndTime = SchedInfo.Value.ExpectedEndTime,
+					BaseScheduleTime = SchedInfo.Key.RequestedTime,
 					ActualStartTime = SchedInfo.Value.LegacyInstance.TimeStarted,
 					ActualEndTime = SchedInfo.Value.LegacyInstance.TimeEnded,
 					ServiceName = SchedInfo.Value.ServiceName,
