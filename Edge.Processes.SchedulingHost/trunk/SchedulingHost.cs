@@ -204,8 +204,9 @@ namespace Edge.Processes.SchedulingHost
 			foreach (Edge.Core.Scheduling.Objects.ServiceInstance serviceInstance in args.ServicesToRun)
 			{
 				serviceInstance.LegacyInstance.StateChanged += new EventHandler<Core.Services.ServiceStateChangedEventArgs>(LegacyInstance_StateChanged);
-				serviceInstance.LegacyInstance.ChildServiceRequested += new EventHandler<Core.Services.ServiceRequestedEventArgs>(LegacyInstance_ChildServiceRequested);
-				serviceInstance.LegacyInstance.OutcomeReported += new EventHandler(instance_OutcomeReported);
+				
+				
+				
 				serviceInstance.LegacyInstance.ProgressReported += new EventHandler(LegacyInstance_ProgressReported);
 				serviceInstance.LegacyInstance.Initialize();
 			}
@@ -249,7 +250,8 @@ namespace Edge.Processes.SchedulingHost
 			try
 			{
 				Legacy.ServiceInstance instance = (Edge.Core.Services.ServiceInstance)sender;
-				instance.OutcomeReported += new EventHandler(instance_OutcomeReported);
+				
+				
 
 				if (_scheduledServices.ContainsKey(instance.Guid))
 				{
@@ -259,6 +261,9 @@ namespace Edge.Processes.SchedulingHost
 					if (e.StateAfter == Legacy.ServiceState.Ready)
 					//_scheduler.if (instance.State==ServiceState.Ready)
 					{
+						instance.ChildServiceRequested += new EventHandler<Core.Services.ServiceRequestedEventArgs>(LegacyInstance_ChildServiceRequested);
+						instance.OutcomeReported += new EventHandler(instance_OutcomeReported);
+						Log.Write(instance.GetType().ToString(), string.Format("instance {0} with id {1} registered outcomereported", instance.Configuration.Name, instance.InstanceID), LogMessageType.Information);
 						stateInfo.ActualStartTime = instance.TimeStarted;
 						instance.Start();
 					}
@@ -287,6 +292,7 @@ namespace Edge.Processes.SchedulingHost
 		void instance_OutcomeReported(object sender, EventArgs e)
 		{
 			Legacy.ServiceInstance instance = (Edge.Core.Services.ServiceInstance)sender;
+			Log.Write(instance.GetType().ToString(), string.Format("instance {0} with id {1}  outcome reported", instance.Configuration.Name, instance.InstanceID), LogMessageType.Information);
 			if (_scheduledServices.ContainsKey(instance.Guid))
 			{
 				Edge.Core.Scheduling.Objects.ServiceInstanceInfo OutcomeInfo = _scheduledServices[instance.Guid];
