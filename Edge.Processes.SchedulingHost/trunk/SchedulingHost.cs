@@ -70,24 +70,50 @@ namespace Edge.Processes.SchedulingHost
 
 		public Legacy.IsAlive IsAlive(Guid guid)
 		{
+			Legacy.IsAlive alive;
 			try
 			{
-				return _scheduler.IsAlive(guid);
+				
+				var instance = _scheduler.ScheduledServices.Where(i => i.LegacyInstance.Guid == guid); //Get from legacyInstance
+				if (instance.Count() > 0)
+					alive = instance.ToList()[0].LegacyInstance.IsAlive();
+				else
+				{
+					instance =_scheduler.ScheduledServices.Where(i => i.SchedulingRequest.Guid == guid); //Get from scheduling guid
+					if (instance.Count() > 0)
+						alive = instance.ToList()[0].LegacyInstance.IsAlive();
+					else //finished so take from history
+					{
+						alive = new Legacy.IsAlive();
+						var item = _scheduler.SchedulerState.HistoryItems.Where(h => h.Value.Guid == guid);
+						if (item.Count() > 0)
+						{
+							HistoryItem historyItem = item.ToList()[0].Value;
+							alive.Guid = historyItem.Guid;
+							alive.Outcome = historyItem.ServiceOutcome;
+						}
+						else
+							alive.State = string.Format("Service with Guid {0} not found", guid);
+					}
+				}
+				
 
 			}
 			catch (Exception ex)
 			{
 
-				return new Legacy.IsAlive() { State = ex.Message };
+				alive= new Legacy.IsAlive() { State = ex.Message };
 			}
+			return alive;
 		}
+	
 
 		public void Abort(Guid guid)
 		{
 			Legacy.ServiceInstance instance = null;
 			try
 			{
-				instance = _scheduler.GetLegacyInstanceByGuid(guid);
+				instance = GetLegacyInstanceByGuid(guid);
 				instance.Abort();
 			}
 			catch (Exception ex)
@@ -95,6 +121,14 @@ namespace Edge.Processes.SchedulingHost
 				Log.Write(this.ToString(), ex.Message, ex, LogMessageType.Warning);
 			}
 
+		}
+		public Legacy.ServiceInstance GetLegacyInstanceByGuid(Guid guid)
+		{
+			var instance =_scheduler.ScheduledServices.Where(i => i.LegacyInstance.Guid == guid); //Get from legacyInstance
+			if (instance.Count() > 0)
+				return instance.ToList()[0].LegacyInstance;
+			else
+				throw new Exception(string.Format("Instance with guid {0} not found!", guid));
 		}
 
 		public void ResetUnEnded()
@@ -111,11 +145,23 @@ namespace Edge.Processes.SchedulingHost
 				}
 			}
 		}
-
 		public List<AccountServiceInformation> GetServicesConfigurations()
 		{
-			return _scheduler.GetServicesConfigurations();
+			List<AccountServiceInformation> accounsServiceInformation = new List<AccountServiceInformation>();
+			foreach (AccountElement account in EdgeServicesConfiguration.Current.Accounts)
+			{
+				AccountServiceInformation accounServiceInformation;
+				accounServiceInformation = new AccountServiceInformation() { AccountName = account.Name, ID = account.ID };
+				accounServiceInformation.Services = new List<string>();
+				foreach (AccountServiceElement service in account.Services)
+					accounServiceInformation.Services.Add(service.Name);
+				accounsServiceInformation.Add(accounServiceInformation);
+			}
+			return accounsServiceInformation;
+
 		}
+
+		
 
 		public Guid AddUnplanedService(int accountID, string serviceName, Dictionary<string, string> options, DateTime targetDateTime)
 		{
@@ -174,7 +220,7 @@ namespace Edge.Processes.SchedulingHost
 				instancesInfo[index] = new Edge.Core.Scheduling.Objects.ServiceInstanceInfo()
 				{
 					LegacyInstanceGuid = SchedInfo.Value.LegacyInstance.Guid,
-					AccountID = SchedInfo.Key.Profile.ID,
+					AccountID = SchedInfo.Key.Configuration.Profile.ID,
 					TargetPeriod = date,
 					InstanceID = SchedInfo.Value.LegacyInstance.InstanceID.ToString(),
 					Outcome = SchedInfo.Value.LegacyInstance.Outcome,
@@ -183,9 +229,9 @@ namespace Edge.Processes.SchedulingHost
 					BaseScheduleTime = SchedInfo.Key.RequestedTime,
 					ActualStartTime = SchedInfo.Value.LegacyInstance.TimeStarted,
 					ActualEndTime = SchedInfo.Value.LegacyInstance.TimeEnded,
-					ServiceName = SchedInfo.Value.ServiceName,
+					ServiceName = SchedInfo.Value.Configuration.Name,
 					State = SchedInfo.Value.LegacyInstance.State,
-					ScheduledID = SchedInfo.Value.ScheduledID,
+					//ScheduledID = SchedInfo.Value.ScheduledID,
 					Options = JsonConvert.SerializeObject(SchedInfo.Value.LegacyInstance.Configuration.Options),
 					ParentInstanceID = SchedInfo.Value.LegacyInstance.ParentInstance != null ? SchedInfo.Value.LegacyInstance.ParentInstance.Guid : Guid.Empty,
 					Progress = SchedInfo.Value.LegacyInstance.State == Legacy.ServiceState.Ended ? 100 : SchedInfo.Value.LegacyInstance.Progress
@@ -322,7 +368,7 @@ namespace Edge.Processes.SchedulingHost
 				}
 				_scheduler.CleandEndedUnplaned(instance);
 
-				_scheduler.Schedule(true);
+				
 			}
 			else
 				throw new Exception("LO agioni");
