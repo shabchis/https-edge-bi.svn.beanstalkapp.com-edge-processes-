@@ -57,7 +57,7 @@ namespace Edge.Processes.SchedulingHost
 		
 		protected override void OnStop()
 		{
-			_schedulingHost.End();
+			_schedulingHost.Stop();
 		}		
 	}
 	
