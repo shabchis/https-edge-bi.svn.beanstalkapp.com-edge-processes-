@@ -21,7 +21,7 @@ namespace Edge.Processes.SchedulingHost
 		private Scheduler _scheduler;
 		private Listener _listener;
 		private List<ISchedulingHostSubscriber> _callBacks = new List<ISchedulingHostSubscriber>();
-		private Dictionary<Guid, Edge.Core.Scheduling.Objects.ServiceInstanceInfo> _scheduledServices = new Dictionary<Guid, Edge.Core.Scheduling.Objects.ServiceInstanceInfo>();
+		//private Dictionary<Guid, Edge.Core.Scheduling.Objects.ServiceInstanceInfo> _scheduledServices = new Dictionary<Guid, Edge.Core.Scheduling.Objects.ServiceInstanceInfo>();
 
 		#region General Methods
 		//=================================================
@@ -266,7 +266,8 @@ namespace Edge.Processes.SchedulingHost
 		{
 			Legacy.ServiceInstance instance = (Edge.Core.Services.ServiceInstance)sender;
 			double progress = instance.Progress * 100;
-			if (_scheduledServices.ContainsKey(instance.Guid))
+			//if (_scheduledServices.ContainsKey(instance.Guid))
+			if (_scheduler.ScheduledServices.ta
 			{
 				Edge.Core.Scheduling.Objects.ServiceInstanceInfo instanceInfo = _scheduledServices[instance.Guid];
 				instanceInfo.LegacyProgress = progress;
