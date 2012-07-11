@@ -30,11 +30,12 @@ namespace Edge.Processes.SchedulingHost
 		{
 			_scheduler = new Scheduler(true);
 			_scheduler.ServiceRunRequiredEvent += new EventHandler<ServicesToRunEventArgs>(_scheduler_ServiceRunRequiredEvent);
-			_scheduler.NewScheduleCreatedEvent += new EventHandler<ScheduledInformationEventArgs>(_scheduler_NewScheduleCreatedEvent);
-
+			_scheduler.NewScheduleCreatedEvent += new EventHandler<SchedulingInformationEventArgs>(_scheduler_NewScheduleCreatedEvent);			
 			_listener = new Listener(_scheduler);
 			_listener.Start();
 		}
+
+		
 
 		public void Stop()
 		{
@@ -205,33 +206,33 @@ namespace Edge.Processes.SchedulingHost
 		#region Event handlers
 		//=================================================
 
-		void _scheduler_NewScheduleCreatedEvent(object sender, EventArgs e)
+		void _scheduler_NewScheduleCreatedEvent(object sender, SchedulingInformationEventArgs e)
 		{
-			Edge.Core.Scheduling.Objects.ServiceInstanceInfo[] instancesInfo = new Edge.Core.Scheduling.Objects.ServiceInstanceInfo[ee.ScheduleInformation.Count];
-			int index = 0;
-			foreach (KeyValuePair<SchedulingRequest, Edge.Core.Scheduling.Objects.ServiceInstance> SchedInfo in ee.ScheduleInformation)
-			{
-				instancesInfo[index] = new Edge.Core.Scheduling.Objects.ServiceInstanceInfo()
-				{
-					LegacyInstanceGuid = SchedInfo.Value.LegacyInstance.Guid,
-					AccountID = SchedInfo.Key.Configuration.Profile.ID,
-					InstanceID = SchedInfo.Value.LegacyInstance.InstanceID.ToString(),
-					Outcome = SchedInfo.Value.LegacyInstance.Outcome,
-					ScheduleStartTime = SchedInfo.Value.ExpectedStartTime,
-					ScheduleEndTime = SchedInfo.Value.ExpectedEndTime,
-					BaseScheduleTime = SchedInfo.Key.RequestedTime,
-					ActualStartTime = SchedInfo.Value.LegacyInstance.TimeStarted,
-					ActualEndTime = SchedInfo.Value.LegacyInstance.TimeEnded,
-					ServiceName = SchedInfo.Value.Configuration.Name,
-					State = SchedInfo.Value.LegacyInstance.State,
-					//ScheduledID = SchedInfo.Value.ScheduledID,
-					Options = JsonConvert.SerializeObject(SchedInfo.Value.LegacyInstance.Configuration.Options.Definition),
-					ParentInstanceID = SchedInfo.Value.LegacyInstance.ParentInstance != null ? SchedInfo.Value.LegacyInstance.ParentInstance.Guid : Guid.Empty,
-					Progress = SchedInfo.Value.LegacyInstance.State == Legacy.ServiceState.Ended ? 100 : SchedInfo.Value.LegacyInstance.Progress
-				};
-				_scheduledServices[SchedInfo.Value.LegacyInstance.Guid] = instancesInfo[index];
-				index++;
-			}
+			Edge.Core.Scheduling.Objects.ServiceInstanceInfo[] instancesInfo = new Edge.Core.Scheduling.Objects.ServiceInstanceInfo[e.ScheduleInformation.Count];
+			//int index = 0;
+			//foreach (KeyValuePair<SchedulingRequest, Edge.Core.Scheduling.Objects.ServiceInstanceInfo> SchedInfo in e.ScheduleInformation)
+			//{
+			//    instancesInfo[index] = new Edge.Core.Scheduling.Objects.ServiceInstanceInfo()
+			//    {
+			//        LegacyInstanceGuid = SchedInfo.Value.LegacyInstance.Guid,
+			//        AccountID = SchedInfo.Key.Configuration.Profile.ID,
+			//        LegacyInstanceID = SchedInfo.Value.LegacyInstance.InstanceID.ToString(),
+			//        LegacyOutcome = SchedInfo.Value.LegacyInstance.Outcome,
+			//        ScheduleStartTime = SchedInfo.Value.ExpectedStartTime,
+			//        ScheduleEndTime = SchedInfo.Value.ExpectedEndTime,
+			//        BaseScheduleTime = SchedInfo.Key.RequestedTime,
+			//        LegacyActualStartTime = SchedInfo.Value.LegacyInstance.TimeStarted,
+			//        LegacyActualEndTime = SchedInfo.Value.LegacyInstance.TimeEnded,
+			//        ServiceName = SchedInfo.Value.Configuration.Name,
+			//        LegacyState = SchedInfo.Value.LegacyInstance.State,
+			//        //ScheduledID = SchedInfo.Value.ScheduledID,
+			//        Options = JsonConvert.SerializeObject(SchedInfo.Value.LegacyInstance.Configuration.Options.Definition),
+			//        LegacyParentInstanceID = SchedInfo.Value.LegacyInstance.ParentInstance != null ? SchedInfo.Value.LegacyInstance.ParentInstance.Guid : Guid.Empty,
+			//        LegacyProgress = SchedInfo.Value.LegacyInstance.State == Legacy.ServiceState.Ended ? 100 : SchedInfo.Value.LegacyInstance.Progress
+			//    };
+			//    _scheduledServices[SchedInfo.Value.LegacyInstance.Guid] = instancesInfo[index];
+			//    index++;
+			//}
 			if (_callBacks != null)
 			{
 				foreach (var callBack in _callBacks)
@@ -268,7 +269,7 @@ namespace Edge.Processes.SchedulingHost
 			if (_scheduledServices.ContainsKey(instance.Guid))
 			{
 				Edge.Core.Scheduling.Objects.ServiceInstanceInfo instanceInfo = _scheduledServices[instance.Guid];
-				instanceInfo.Progress = progress;
+				instanceInfo.LegacyProgress = progress;
 				foreach (var callBack in _callBacks)
 				{
 					try
@@ -305,13 +306,13 @@ namespace Edge.Processes.SchedulingHost
 				{
 
 					Edge.Core.Scheduling.Objects.ServiceInstanceInfo stateInfo = _scheduledServices[instance.Guid];
-					stateInfo.State = instance.State;
+					stateInfo.LegacyState = instance.State;
 					
 					if (instance.State==Legacy.ServiceState.Ready)
 					{
 												
 						Log.Write(instance.GetType().ToString(), string.Format("instance {0} with id {1} registered outcomereported", instance.Configuration.Name, instance.InstanceID), LogMessageType.Information);
-						stateInfo.ActualStartTime = instance.TimeStarted;
+						stateInfo.LegacyActualStartTime = instance.TimeStarted;
 						instance.Start();
 					}
 					foreach (var callBack in _callBacks)
@@ -343,9 +344,9 @@ namespace Edge.Processes.SchedulingHost
 			if (_scheduledServices.ContainsKey(instance.Guid))
 			{
 				Edge.Core.Scheduling.Objects.ServiceInstanceInfo OutcomeInfo = _scheduledServices[instance.Guid];
-				OutcomeInfo.Outcome = instance.Outcome;
-				OutcomeInfo.ActualEndTime = instance.TimeEnded;
-				OutcomeInfo.Progress = 100;
+				OutcomeInfo.LegacyOutcome = instance.Outcome;
+				OutcomeInfo.LegacyActualEndTime = instance.TimeEnded;
+				OutcomeInfo.LegacyProgress = 100;
 				foreach (var callBack in _callBacks)
 				{
 					try
