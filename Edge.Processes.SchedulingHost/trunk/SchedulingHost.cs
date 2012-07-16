@@ -267,9 +267,9 @@ namespace Edge.Processes.SchedulingHost
 			Legacy.ServiceInstance instance = (Edge.Core.Services.ServiceInstance)sender;
 			double progress = instance.Progress * 100;
 			//if (_scheduledServices.ContainsKey(instance.Guid))
-			if (_scheduler.ScheduledServices.ta
+			if (_scheduler.ScheduledServices.ContainsKey(instance.Guid))
 			{
-				Edge.Core.Scheduling.Objects.ServiceInstanceInfo instanceInfo = _scheduledServices[instance.Guid];
+				Edge.Core.Scheduling.Objects.ServiceInstanceInfo instanceInfo =_scheduler.ScheduledServices[instance.Guid].GetInfo();
 				instanceInfo.LegacyProgress = progress;
 				foreach (var callBack in _callBacks)
 				{
@@ -303,10 +303,10 @@ namespace Edge.Processes.SchedulingHost
 				
 				
 
-				if (_scheduledServices.ContainsKey(instance.Guid))
+				if (_scheduler.ScheduledServices.ContainsKey(instance.Guid))
 				{
 
-					Edge.Core.Scheduling.Objects.ServiceInstanceInfo stateInfo = _scheduledServices[instance.Guid];
+					Edge.Core.Scheduling.Objects.ServiceInstanceInfo stateInfo = _scheduler.ScheduledServices[instance.Guid].GetInfo();
 					stateInfo.LegacyState = instance.State;
 					
 					if (instance.State==Legacy.ServiceState.Ready)
@@ -342,9 +342,9 @@ namespace Edge.Processes.SchedulingHost
 		{
 			Legacy.ServiceInstance instance = (Edge.Core.Services.ServiceInstance)sender;
 			Log.Write(instance.GetType().ToString(), string.Format("instance {0} with id {1}  outcome reported", instance.Configuration.Name, instance.InstanceID), LogMessageType.Information);
-			if (_scheduledServices.ContainsKey(instance.Guid))
+			if (_scheduler.ScheduledServices.ContainsKey(instance.Guid))
 			{
-				Edge.Core.Scheduling.Objects.ServiceInstanceInfo OutcomeInfo = _scheduledServices[instance.Guid];
+				Edge.Core.Scheduling.Objects.ServiceInstanceInfo OutcomeInfo = _scheduler.ScheduledServices[instance.Guid].GetInfo();
 				OutcomeInfo.LegacyOutcome = instance.Outcome;
 				OutcomeInfo.LegacyActualEndTime = instance.TimeEnded;
 				OutcomeInfo.LegacyProgress = 100;
