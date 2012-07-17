@@ -325,7 +325,7 @@ namespace Edge.Processes.SchedulingHost
 			{
 				Edge.Core.Scheduling.Objects.ServiceInstance Outcomeinstance = _scheduler.ScheduledServices[serviceInstance.Guid];
 				AddToInstanceEvents(Outcomeinstance);				
-				_scheduler.CleandEndedUnplaned(serviceInstance);			
+							
 			}
 			else
 				throw new Exception("LO agioni");
