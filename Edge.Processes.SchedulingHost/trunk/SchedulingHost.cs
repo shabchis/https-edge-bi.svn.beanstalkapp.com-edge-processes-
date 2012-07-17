@@ -18,9 +18,11 @@ namespace Edge.Processes.SchedulingHost
 	[ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
 	public class SchedulingHost : ISchedulingHost
 	{
+		private const string ClassName = "SchedulingHost";
 		private Scheduler _scheduler;
 		private Listener _listener;
 		private List<ISchedulingHostSubscriber> _callBacks = new List<ISchedulingHostSubscriber>();
+		private Dictionary<Guid, ServiceInstanceInfo> _instancesEvents = new Dictionary<Guid, ServiceInstanceInfo>();
 		//private Dictionary<Guid, Edge.Core.Scheduling.Objects.ServiceInstanceInfo> _scheduledServices = new Dictionary<Guid, Edge.Core.Scheduling.Objects.ServiceInstanceInfo>();
 
 		#region General Methods
@@ -33,6 +35,33 @@ namespace Edge.Processes.SchedulingHost
 			_scheduler.NewScheduleCreatedEvent += new EventHandler<SchedulingInformationEventArgs>(_scheduler_NewScheduleCreatedEvent);			
 			_listener = new Listener(_scheduler);
 			_listener.Start();
+
+
+			Thread t=new Thread(delegate() {
+				while (true)
+				{
+					Thread.Sleep(3000);
+
+					List<ServiceInstanceInfo> instances; 
+					lock (_instancesEvents)
+					{
+						instances = _instancesEvents.Values.ToList();
+						 _instancesEvents.Clear();
+					}
+					foreach (var callBack in _callBacks)
+					{
+						try
+						{
+							callBack.InstancesEvents(instances);
+						}
+						catch (Exception ex)
+						{
+							Log.Write(ClassName, ex.Message, ex, LogMessageType.Warning);
+						}
+					}
+
+				}
+			});
 		}
 
 		
@@ -128,7 +157,7 @@ namespace Edge.Processes.SchedulingHost
 			}
 			catch (Exception ex)
 			{
-				Log.Write(this.ToString(), ex.Message, ex, LogMessageType.Warning);
+				Log.Write(ClassName, ex.Message, ex, LogMessageType.Warning);
 			}
 
 		}
@@ -208,44 +237,25 @@ namespace Edge.Processes.SchedulingHost
 
 		void _scheduler_NewScheduleCreatedEvent(object sender, SchedulingInformationEventArgs e)
 		{
-			Edge.Core.Scheduling.Objects.ServiceInstanceInfo[] instancesInfo = new Edge.Core.Scheduling.Objects.ServiceInstanceInfo[e.ScheduleInformation.Count];
-			//int index = 0;
-			//foreach (KeyValuePair<SchedulingRequest, Edge.Core.Scheduling.Objects.ServiceInstanceInfo> SchedInfo in e.ScheduleInformation)
-			//{
-			//    instancesInfo[index] = new Edge.Core.Scheduling.Objects.ServiceInstanceInfo()
-			//    {
-			//        LegacyInstanceGuid = SchedInfo.Value.LegacyInstance.Guid,
-			//        AccountID = SchedInfo.Key.Configuration.Profile.ID,
-			//        LegacyInstanceID = SchedInfo.Value.LegacyInstance.InstanceID.ToString(),
-			//        LegacyOutcome = SchedInfo.Value.LegacyInstance.Outcome,
-			//        ScheduleStartTime = SchedInfo.Value.ExpectedStartTime,
-			//        ScheduleEndTime = SchedInfo.Value.ExpectedEndTime,
-			//        BaseScheduleTime = SchedInfo.Key.RequestedTime,
-			//        LegacyActualStartTime = SchedInfo.Value.LegacyInstance.TimeStarted,
-			//        LegacyActualEndTime = SchedInfo.Value.LegacyInstance.TimeEnded,
-			//        ServiceName = SchedInfo.Value.Configuration.Name,
-			//        LegacyState = SchedInfo.Value.LegacyInstance.State,
-			//        //ScheduledID = SchedInfo.Value.ScheduledID,
-			//        Options = JsonConvert.SerializeObject(SchedInfo.Value.LegacyInstance.Configuration.Options.Definition),
-			//        LegacyParentInstanceID = SchedInfo.Value.LegacyInstance.ParentInstance != null ? SchedInfo.Value.LegacyInstance.ParentInstance.Guid : Guid.Empty,
-			//        LegacyProgress = SchedInfo.Value.LegacyInstance.State == Legacy.ServiceState.Ended ? 100 : SchedInfo.Value.LegacyInstance.Progress
-			//    };
-			//    _scheduledServices[SchedInfo.Value.LegacyInstance.Guid] = instancesInfo[index];
-			//    index++;
-			//}
-			if (_callBacks != null)
+			List<Edge.Core.Scheduling.Objects.ServiceInstance> instances = e.ScheduleInformation.Values.ToList<Edge.Core.Scheduling.Objects.ServiceInstance>();
+			AddToInstanceEvents(instances);			
+		}
+		private void AddToInstanceEvents(ServiceInstance instance)
+		{
+			if (!_instancesEvents.ContainsKey(instance.LegacyInstance.Guid))
+				_instancesEvents.Add(instance.LegacyInstance.Guid, instance.GetInfo());
+			else
+				_instancesEvents[instance.LegacyInstance.Guid] = instance.GetInfo();
+		}
+
+		private void AddToInstanceEvents(List<ServiceInstance> instances)
+		{
+			foreach (var instance in instances)
 			{
-				foreach (var callBack in _callBacks)
-				{
-					try
-					{
-						callBack.ScheduleCreated(instancesInfo);
-					}
-					catch (Exception ex)
-					{
-						Log.Write("SchedulingHost", ex.Message, ex, LogMessageType.Warning);
-					}
-				}
+				if (!_instancesEvents.ContainsKey(instance.LegacyInstance.Guid))
+					_instancesEvents.Add(instance.LegacyInstance.Guid, instance.GetInfo());
+				else
+					_instancesEvents[instance.LegacyInstance.Guid] = instance.GetInfo();				
 			}
 		}
 		void _scheduler_ServiceRunRequiredEvent(object sender, EventArgs e)
@@ -264,26 +274,17 @@ namespace Edge.Processes.SchedulingHost
 
 		void LegacyInstance_ProgressReported(object sender, EventArgs e)
 		{
-			Legacy.ServiceInstance instance = (Edge.Core.Services.ServiceInstance)sender;
-			double progress = instance.Progress * 100;
+			Legacy.ServiceInstance serviceInstance = (Edge.Core.Services.ServiceInstance)sender;
+			double progress = serviceInstance.Progress * 100;
 			//if (_scheduledServices.ContainsKey(instance.Guid))
-			if (_scheduler.ScheduledServices.ContainsKey(instance.Guid))
+			if (_scheduler.ScheduledServices.ContainsKey(serviceInstance.Guid))
 			{
-				Edge.Core.Scheduling.Objects.ServiceInstanceInfo instanceInfo =_scheduler.ScheduledServices[instance.Guid].GetInfo();
-				instanceInfo.LegacyProgress = progress;
-				foreach (var callBack in _callBacks)
-				{
-					try
-					{
-						callBack.InstanceEvent(instanceInfo);
-					}
-					catch (Exception ex)
-					{
-						Log.Write("SchedulingHost", ex.Message, ex, LogMessageType.Warning);
-					}
-				}
+				Edge.Core.Scheduling.Objects.ServiceInstance instance = _scheduler.ScheduledServices[serviceInstance.Guid];
+				AddToInstanceEvents(instance);				
 			}
 		}
+
+		
 		void LegacyInstance_ChildServiceRequested(object sender, Core.Services.ServiceRequestedEventArgs e)
 		{
 			try
@@ -292,76 +293,39 @@ namespace Edge.Processes.SchedulingHost
 			}
 			catch (Exception ex)
 			{
-				Edge.Core.Utilities.Log.Write("SchedulingControlForm", ex.Message, ex, Edge.Core.Utilities.LogMessageType.Error);
+				Edge.Core.Utilities.Log.Write(ClassName, ex.Message, ex, Edge.Core.Utilities.LogMessageType.Error);
 			}
 		}
 		void LegacyInstance_StateChanged(object sender, Core.Services.ServiceStateChangedEventArgs e)
 		{
 			try
 			{
-				Legacy.ServiceInstance instance = (Edge.Core.Services.ServiceInstance)sender;
-				
-				
-
-				if (_scheduler.ScheduledServices.ContainsKey(instance.Guid))
+				Legacy.ServiceInstance serviceInstance = (Edge.Core.Services.ServiceInstance)sender;
+				if (_scheduler.ScheduledServices.ContainsKey(serviceInstance.Guid))
 				{
 
-					Edge.Core.Scheduling.Objects.ServiceInstanceInfo stateInfo = _scheduler.ScheduledServices[instance.Guid].GetInfo();
-					stateInfo.LegacyState = instance.State;
-					
-					if (instance.State==Legacy.ServiceState.Ready)
-					{
-												
-						Log.Write(instance.GetType().ToString(), string.Format("instance {0} with id {1} registered outcomereported", instance.Configuration.Name, instance.InstanceID), LogMessageType.Information);
-						stateInfo.LegacyActualStartTime = instance.TimeStarted;
-						instance.Start();
-					}
-					foreach (var callBack in _callBacks)
-					{
-						try
-						{
-							callBack.InstanceEvent(stateInfo);
-						}
-						catch (Exception ex)
-						{
-							Log.Write("SchedulingHost", ex.Message, ex, LogMessageType.Warning);
-						}
-					}
+					Edge.Core.Scheduling.Objects.ServiceInstance instance = _scheduler.ScheduledServices[serviceInstance.Guid];					
+					if (serviceInstance.State==Legacy.ServiceState.Ready)						
+						serviceInstance.Start();
+					AddToInstanceEvents(instance);					
 				}
 				else
 					throw new Exception("lo agioni");
-
-
 			}
 			catch (Exception ex)
 			{
-				Edge.Core.Utilities.Log.Write("SchedulingControlForm", ex.Message, ex, Edge.Core.Utilities.LogMessageType.Error);
+				Edge.Core.Utilities.Log.Write(ClassName, ex.Message, ex, Edge.Core.Utilities.LogMessageType.Error);
 			}
 		}
 		void LegacyInstance_OutcomeReported(object sender, EventArgs e)
 		{
-			Legacy.ServiceInstance instance = (Edge.Core.Services.ServiceInstance)sender;
-			Log.Write(instance.GetType().ToString(), string.Format("instance {0} with id {1}  outcome reported", instance.Configuration.Name, instance.InstanceID), LogMessageType.Information);
-			if (_scheduler.ScheduledServices.ContainsKey(instance.Guid))
+			Legacy.ServiceInstance serviceInstance = (Edge.Core.Services.ServiceInstance)sender;
+			
+			if (_scheduler.ScheduledServices.ContainsKey(serviceInstance.Guid))
 			{
-				Edge.Core.Scheduling.Objects.ServiceInstanceInfo OutcomeInfo = _scheduler.ScheduledServices[instance.Guid].GetInfo();
-				OutcomeInfo.LegacyOutcome = instance.Outcome;
-				OutcomeInfo.LegacyActualEndTime = instance.TimeEnded;
-				OutcomeInfo.LegacyProgress = 100;
-				foreach (var callBack in _callBacks)
-				{
-					try
-					{
-						callBack.InstanceEvent(OutcomeInfo);
-					}
-					catch (Exception ex)
-					{
-						Log.Write("SchedulingHost", ex.Message, ex, LogMessageType.Warning);
-					}
-				}
-				_scheduler.CleandEndedUnplaned(instance);
-
-				
+				Edge.Core.Scheduling.Objects.ServiceInstance Outcomeinstance = _scheduler.ScheduledServices[serviceInstance.Guid];
+				AddToInstanceEvents(Outcomeinstance);				
+				_scheduler.CleandEndedUnplaned(serviceInstance);			
 			}
 			else
 				throw new Exception("LO agioni");
@@ -375,5 +339,6 @@ namespace Edge.Processes.SchedulingHost
 
 
 	}
+	
 
 }
