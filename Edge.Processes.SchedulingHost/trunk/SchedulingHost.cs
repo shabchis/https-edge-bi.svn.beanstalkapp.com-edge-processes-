@@ -163,19 +163,20 @@ namespace Edge.Processes.SchedulingHost
 			}
 		}
 
-		public List<AccountServiceInformation> GetServicesConfigurations()
+		public List<Profile> GetServicesConfigurations()
 		{
-			List<AccountServiceInformation> accounsServiceInformation = new List<AccountServiceInformation>();
-			foreach (AccountElement account in EdgeServicesConfiguration.Current.Accounts)
-			{
-				AccountServiceInformation accounServiceInformation;
-				accounServiceInformation = new AccountServiceInformation() { AccountName = account.Name, ID = account.ID };
-				accounServiceInformation.Services = new List<string>();
-				foreach (AccountServiceElement service in account.Services)
-					accounServiceInformation.Services.Add(service.Name);
-				accounsServiceInformation.Add(accounServiceInformation);
-			}
-			return accounsServiceInformation;
+			return _scheduler.Profiles.Values.ToList();
+			//List<AccountServiceInformation> accounsServiceInformation = new List<AccountServiceInformation>();
+			//foreach (AccountElement account in EdgeServicesConfiguration.Current.Accounts)
+			//{
+			//    AccountServiceInformation accounServiceInformation;
+			//    accounServiceInformation = new AccountServiceInformation() { AccountName = account.Name, ID = account.ID };
+			//    accounServiceInformation.Services = new List<string>();
+			//    foreach (AccountServiceElement service in account.Services)
+			//        accounServiceInformation.Services.Add(service.Name);
+			//    accounsServiceInformation.Add(accounServiceInformation);
+			//}
+			//return accounsServiceInformation;
 
 		}
 
