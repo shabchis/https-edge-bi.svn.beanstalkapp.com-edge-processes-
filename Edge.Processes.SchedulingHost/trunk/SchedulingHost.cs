@@ -191,10 +191,10 @@ namespace Edge.Processes.SchedulingHost
 
 			//ActiveServiceElement activeServiceElement = new ActiveServiceElement(accountServiceElement);
 			ServiceConfiguration myServiceConfiguration = ServiceConfiguration.FromLegacyConfiguration(accountServiceElement, _scheduler.GetServiceBaseConfiguration(accountServiceElement.Uses.Element.Name), profile);
-
+			
 			myServiceConfiguration.SchedulingRules.Add(SchedulingRule.CreateUnplanned());
 
-			//guid = myServiceConfiguration.SchedulingRules[0].GuidForUnplanned;
+			guid = myServiceConfiguration.SchedulingRules[0].GuidForUnplanned;
 			myServiceConfiguration.SchedulingRules[0].Times.Add(new TimeSpan(0, 0, 0, 0));
 
 
