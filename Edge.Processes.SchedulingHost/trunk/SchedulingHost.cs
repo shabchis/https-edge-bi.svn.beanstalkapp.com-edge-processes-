@@ -79,9 +79,9 @@ namespace Edge.Processes.SchedulingHost
 
 		private Legacy.ServiceInstance GetLegacyInstanceByGuid(Guid guid)
 		{
-			var instance = _scheduler.ScheduledServices.Where(i => i.LegacyInstance.Guid == guid); //Get from legacyInstance
+			var instance = _scheduler.ScheduledServices.Where(i => i.Instance.LegacyInstance.Guid == guid); //Get from legacyInstance
 			if (instance.Count() > 0)
-				return instance.ToList()[0].LegacyInstance;
+				return instance.ToList()[0].Instance.LegacyInstance;
 			else
 				throw new Exception(string.Format("Instance with guid {0} not found!", guid));
 		}
@@ -116,9 +116,9 @@ namespace Edge.Processes.SchedulingHost
 			Legacy.PingInfo alive;
 			try
 			{
-				var instance = _scheduler.ScheduledServices.Where(i => i.LegacyInstance.Guid == guid); //Get from legacyInstance
+				var instance = _scheduler.ScheduledServices.Where(i => i.Instance.LegacyInstance.Guid == guid); //Get from legacyInstance
 				if (instance.Count() > 0)
-					alive = instance.ToList()[0].LegacyInstance.Ping();
+					alive = instance.ToList()[0].Instance.LegacyInstance.Ping();
 				else
 				{
 					alive = new Legacy.PingInfo();
@@ -165,8 +165,7 @@ namespace Edge.Processes.SchedulingHost
 
 		public ProfileInfo[] GetSchedulingProfiles()
 		{
-			throw new NotImplementedException();
-			//return _scheduler.Profiles.Values.ToArray();
+			return _scheduler.Profiles.GetProfilesInfo();		
 		}
 
 
@@ -195,12 +194,12 @@ namespace Edge.Processes.SchedulingHost
 
 			myServiceConfiguration.SchedulingRules.Add(SchedulingRule.CreateUnplanned());
 
-			guid = myServiceConfiguration.SchedulingRules[0].GuidForUnplanned;
+			//guid = myServiceConfiguration.SchedulingRules[0].GuidForUnplanned;
 			myServiceConfiguration.SchedulingRules[0].Times.Add(new TimeSpan(0, 0, 0, 0));
 
 
 			myServiceConfiguration.Profile = profile;
-
+			
 			_scheduler.AddServiceToSchedule(myServiceConfiguration);
 			return guid;
 		}
