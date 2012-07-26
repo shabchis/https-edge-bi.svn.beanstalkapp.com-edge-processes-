@@ -165,7 +165,7 @@ namespace Edge.Processes.SchedulingHost
 
 		public ProfileInfo[] GetSchedulingProfiles()
 		{
-			return _scheduler.Profiles.GetProfilesInfo();		
+			return _scheduler.Profiles.GetProfilesInfo();
 		}
 
 
@@ -199,7 +199,7 @@ namespace Edge.Processes.SchedulingHost
 
 
 			myServiceConfiguration.Profile = profile;
-			
+
 			_scheduler.AddServiceToSchedule(myServiceConfiguration);
 			return guid;
 		}
@@ -212,7 +212,7 @@ namespace Edge.Processes.SchedulingHost
 
 		void _scheduler_NewScheduleCreatedEvent(object sender, SchedulingInformationEventArgs e)
 		{
-			List<Edge.Core.Scheduling.Objects.ServiceInstance> instances = e.ScheduleInformation.Values.ToList<Edge.Core.Scheduling.Objects.ServiceInstance>();
+			List<ServiceInstance> instances = e.ScheduleInformation.ConvertAll<ServiceInstance>(p => p.Instance);
 			AddToInstanceEvents(instances);
 		}
 		private void AddToInstanceEvents(ServiceInstance instance)
@@ -236,31 +236,25 @@ namespace Edge.Processes.SchedulingHost
 		void _scheduler_ServiceRunRequiredEvent(object sender, EventArgs e)
 		{
 			ServicesToRunEventArgs args = (ServicesToRunEventArgs)e;
-			foreach (Edge.Core.Scheduling.Objects.ServiceInstance serviceInstance in args.ServicesToRun)
+			foreach (Edge.Core.Scheduling.Objects.SchedulingRequest serviceInstance in args.ServicesToRun)
 			{
-				serviceInstance.LegacyInstance.StateChanged += new EventHandler<Core.Services.ServiceStateChangedEventArgs>(LegacyInstance_StateChanged);
-				serviceInstance.LegacyInstance.OutcomeReported += new EventHandler(LegacyInstance_OutcomeReported);
-				serviceInstance.LegacyInstance.ChildServiceRequested += new EventHandler<Core.Services.ServiceRequestedEventArgs>(LegacyInstance_ChildServiceRequested);
-				serviceInstance.LegacyInstance.ProgressReported += new EventHandler(LegacyInstance_ProgressReported);
-				serviceInstance.LegacyInstance.Initialize();
+				serviceInstance.Instance.StateChanged += new EventHandler(Instance_StateChanged);   // new EventHandler<Core.Services.ServiceStateChangedEventArgs>(LegacyInstance_StateChanged);
+				serviceInstance.Instance.OutcomeReported += new EventHandler(Instance_OutcomeReported);  //new EventHandler(LegacyInstance_OutcomeReported);
+				serviceInstance.Instance.ChildServiceRequested += new EventHandler<Legacy.ServiceRequestedEventArgs>(Instance_ChildServiceRequested); //new EventHandler<Core.Services.ServiceRequestedEventArgs>(LegacyInstance_ChildServiceRequested);
+				serviceInstance.Instance.ProgressReported += new EventHandler(Instance_ProgressReported); //new EventHandler(LegacyInstance_ProgressReported);
+				serviceInstance.Instance.Initialize();
 			}
 		}
 
-
-		void LegacyInstance_ProgressReported(object sender, EventArgs e)
+		void Instance_ProgressReported(object sender, EventArgs e)
 		{
-			Legacy.ServiceInstance serviceInstance = (Edge.Core.Services.ServiceInstance)sender;
+			ServiceInstance serviceInstance = (ServiceInstance)sender;
 			double progress = serviceInstance.Progress * 100;
-			//if (_scheduledServices.ContainsKey(instance.Guid))
-			if (_scheduler.ScheduledServices.ContainsKey(serviceInstance.Guid))
-			{
-				Edge.Core.Scheduling.Objects.ServiceInstance instance = _scheduler.ScheduledServices[serviceInstance.Guid];
-				AddToInstanceEvents(instance);
-			}
+			AddToInstanceEvents(serviceInstance);
+
 		}
 
-
-		void LegacyInstance_ChildServiceRequested(object sender, Core.Services.ServiceRequestedEventArgs e)
+		void Instance_ChildServiceRequested(object sender, Legacy.ServiceRequestedEventArgs e)
 		{
 			try
 			{
@@ -271,40 +265,33 @@ namespace Edge.Processes.SchedulingHost
 				Edge.Core.Utilities.Log.Write(ClassName, ex.Message, ex, Edge.Core.Utilities.LogMessageType.Error);
 			}
 		}
-		void LegacyInstance_StateChanged(object sender, Core.Services.ServiceStateChangedEventArgs e)
+
+		void Instance_OutcomeReported(object sender, EventArgs e)
+		{
+			ServiceInstance serviceInstance = (ServiceInstance)sender;
+			AddToInstanceEvents(serviceInstance);
+		}
+
+		void Instance_StateChanged(object sender, EventArgs e)
 		{
 			try
 			{
-				Legacy.ServiceInstance serviceInstance = (Edge.Core.Services.ServiceInstance)sender;
-				if (_scheduler.ScheduledServices.ContainsKey(serviceInstance.Guid))
-				{
-
-					Edge.Core.Scheduling.Objects.ServiceInstance instance = _scheduler.ScheduledServices[serviceInstance.Guid];
-					if (serviceInstance.State == Legacy.ServiceState.Ready)
-						serviceInstance.Start();
-					AddToInstanceEvents(instance);
-				}
-				else
-					throw new Exception("lo agioni");
+				ServiceInstance serviceInstance = (ServiceInstance)sender;
+				if (serviceInstance.State == Legacy.ServiceState.Ready)
+					serviceInstance.Start();
+				AddToInstanceEvents(serviceInstance);
 			}
 			catch (Exception ex)
 			{
 				Edge.Core.Utilities.Log.Write(ClassName, ex.Message, ex, Edge.Core.Utilities.LogMessageType.Error);
 			}
 		}
-		void LegacyInstance_OutcomeReported(object sender, EventArgs e)
-		{
-			Legacy.ServiceInstance serviceInstance = (Edge.Core.Services.ServiceInstance)sender;
 
-			if (_scheduler.ScheduledServices.ContainsKey(serviceInstance.Guid))
-			{
-				Edge.Core.Scheduling.Objects.ServiceInstance Outcomeinstance = _scheduler.ScheduledServices[serviceInstance.Guid];
-				AddToInstanceEvents(Outcomeinstance);
 
-			}
-			else
-				throw new Exception("LO agioni");
-		}
+
+
+
+		
 		//=================================================
 		#endregion
 
