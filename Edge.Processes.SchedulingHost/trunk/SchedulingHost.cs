@@ -33,7 +33,7 @@ namespace Edge.Processes.SchedulingHost
 			_scheduler = new Scheduler(true);
 			_scheduler.ServiceRunRequiredEvent += new EventHandler<ServicesToRunEventArgs>(_scheduler_ServiceRunRequiredEvent);
 			_scheduler.NewScheduleCreatedEvent += new EventHandler<SchedulingInformationEventArgs>(_scheduler_NewScheduleCreatedEvent);
-			_listener = new Listener(_scheduler);
+			_listener = new Listener(_scheduler,this);
 			_listener.Start();
 
 
@@ -191,12 +191,14 @@ namespace Edge.Processes.SchedulingHost
 			if (accountServiceElement == null)
 				throw new Exception(String.Format("Service '{0}' not found in account {1}.", serviceName, accountID));
 
-			//ActiveServiceElement activeServiceElement = new ActiveServiceElement(accountServiceElement);
-			ServiceConfiguration myServiceConfiguration = ServiceConfiguration.FromLegacyConfiguration(accountServiceElement, _scheduler.GetServiceBaseConfiguration(accountServiceElement.Uses.Element.Name), profile);
+			
+			ServiceConfiguration myServiceConfiguration = ServiceConfiguration.FromLegacyConfiguration(accountServiceElement, _scheduler.GetServiceBaseConfiguration(accountServiceElement.Uses.Element.Name), profile,options);
 
-			myServiceConfiguration.SchedulingRules.Add(SchedulingRule.CreateUnplanned(targetDateTime));
-
-			guid = myServiceConfiguration.SchedulingRules[0].GuidForUnplanned;
+			lock (myServiceConfiguration)
+			{
+				myServiceConfiguration.SchedulingRules.Add(SchedulingRule.CreateUnplanned(targetDateTime));
+				guid = myServiceConfiguration.SchedulingRules[0].GuidForUnplanned;
+			}
 
 
 
