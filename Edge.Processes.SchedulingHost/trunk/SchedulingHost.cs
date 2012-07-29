@@ -53,7 +53,8 @@ namespace Edge.Processes.SchedulingHost
 					{
 						try
 						{
-							callBack.InstancesEvents(instances);
+							if (instances != null && instances.Count > 0)
+								callBack.InstancesEvents(instances);
 						}
 						catch (Exception ex)
 						{
@@ -63,6 +64,7 @@ namespace Edge.Processes.SchedulingHost
 
 				}
 			});
+			t.Start();
 		}
 
 
@@ -191,11 +193,11 @@ namespace Edge.Processes.SchedulingHost
 
 			//ActiveServiceElement activeServiceElement = new ActiveServiceElement(accountServiceElement);
 			ServiceConfiguration myServiceConfiguration = ServiceConfiguration.FromLegacyConfiguration(accountServiceElement, _scheduler.GetServiceBaseConfiguration(accountServiceElement.Uses.Element.Name), profile);
-			
-			myServiceConfiguration.SchedulingRules.Add(SchedulingRule.CreateUnplanned());
+
+			myServiceConfiguration.SchedulingRules.Add(SchedulingRule.CreateUnplanned(targetDateTime));
 
 			guid = myServiceConfiguration.SchedulingRules[0].GuidForUnplanned;
-			myServiceConfiguration.SchedulingRules[0].Times.Add(new TimeSpan(0, 0, 0, 0));
+
 
 
 			myServiceConfiguration.Profile = profile;
@@ -213,7 +215,8 @@ namespace Edge.Processes.SchedulingHost
 		void _scheduler_NewScheduleCreatedEvent(object sender, SchedulingInformationEventArgs e)
 		{
 			List<ServiceInstance> instances = e.ScheduleInformation.ConvertAll<ServiceInstance>(p => p.Instance);
-			AddToInstanceEvents(instances);
+			if (instances != null && instances.Count > 0)
+				AddToInstanceEvents(instances);
 		}
 		private void AddToInstanceEvents(ServiceInstance instance)
 		{
@@ -291,7 +294,7 @@ namespace Edge.Processes.SchedulingHost
 
 
 
-		
+
 		//=================================================
 		#endregion
 
