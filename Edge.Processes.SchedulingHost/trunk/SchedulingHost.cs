@@ -193,14 +193,8 @@ namespace Edge.Processes.SchedulingHost
 
 			
 			ServiceConfiguration myServiceConfiguration = ServiceConfiguration.FromLegacyConfiguration(accountServiceElement, _scheduler.GetServiceBaseConfiguration(accountServiceElement.Uses.Element.Name), profile,options);
-
-			lock (myServiceConfiguration)
-			{
-				myServiceConfiguration.SchedulingRules.Add(SchedulingRule.CreateUnplanned(targetDateTime));
-				guid = myServiceConfiguration.SchedulingRules[0].GuidForUnplanned;
-			}
-
-
+			myServiceConfiguration.SchedulingRules.Add(SchedulingRule.CreateUnplanned(targetDateTime));
+			guid = myServiceConfiguration.SchedulingRules[0].GuidForUnplanned;
 
 			myServiceConfiguration.Profile = profile;
 
@@ -241,13 +235,13 @@ namespace Edge.Processes.SchedulingHost
 		void _scheduler_ServiceRunRequiredEvent(object sender, EventArgs e)
 		{
 			ServicesToRunEventArgs args = (ServicesToRunEventArgs)e;
-			foreach (Edge.Core.Scheduling.Objects.SchedulingRequest serviceInstance in args.ServicesToRun)
+			foreach (Edge.Core.Scheduling.Objects.SchedulingRequest request in args.ServicesToRun)
 			{
-				serviceInstance.Instance.StateChanged += new EventHandler(Instance_StateChanged);   // new EventHandler<Core.Services.ServiceStateChangedEventArgs>(LegacyInstance_StateChanged);
-				serviceInstance.Instance.OutcomeReported += new EventHandler(Instance_OutcomeReported);  //new EventHandler(LegacyInstance_OutcomeReported);
-				serviceInstance.Instance.ChildServiceRequested += new EventHandler<Legacy.ServiceRequestedEventArgs>(Instance_ChildServiceRequested); //new EventHandler<Core.Services.ServiceRequestedEventArgs>(LegacyInstance_ChildServiceRequested);
-				serviceInstance.Instance.ProgressReported += new EventHandler(Instance_ProgressReported); //new EventHandler(LegacyInstance_ProgressReported);
-				serviceInstance.Instance.Initialize();
+				request.Instance.StateChanged += new EventHandler(Instance_StateChanged);   // new EventHandler<Core.Services.ServiceStateChangedEventArgs>(LegacyInstance_StateChanged);
+				request.Instance.OutcomeReported += new EventHandler(Instance_OutcomeReported);  //new EventHandler(LegacyInstance_OutcomeReported);
+				request.Instance.ChildServiceRequested += new EventHandler<Legacy.ServiceRequestedEventArgs>(Instance_ChildServiceRequested); //new EventHandler<Core.Services.ServiceRequestedEventArgs>(LegacyInstance_ChildServiceRequested);
+				request.Instance.ProgressReported += new EventHandler(Instance_ProgressReported); //new EventHandler(LegacyInstance_ProgressReported);
+				request.Instance.Initialize();
 			}
 		}
 
