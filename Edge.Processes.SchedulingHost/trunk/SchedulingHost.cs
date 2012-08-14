@@ -31,7 +31,7 @@ namespace Edge.Processes.SchedulingHost
 		public void Init()
 		{
 			_scheduler = new Scheduler(true);
-			_scheduler.ServiceRunRequiredEvent += new EventHandler<ServicesToRunEventArgs>(_scheduler_ServiceRunRequiredEvent);
+			_scheduler.ScheduledRequestTimeArrived += new EventHandler<SchedulingRequestTimeArrivedArgs>(_scheduler_ServiceRunRequiredEvent);
 			_scheduler.NewScheduleCreatedEvent += new EventHandler<SchedulingInformationEventArgs>(_scheduler_NewScheduleCreatedEvent);
 			_listener = new Listener(_scheduler,this);
 			_listener.Start();
@@ -174,32 +174,35 @@ namespace Edge.Processes.SchedulingHost
 
 		public Guid AddUnplannedService(int accountID, string serviceName, DateTime targetDateTime, Dictionary<string, string> options)
 		{
-
-			Guid guid;
 			AccountElement accountElement = EdgeServicesConfiguration.Current.Accounts.GetAccount(accountID);
 			if (accountElement == null)
 				throw new Exception(String.Format("Account '{0}' not found in configuration.", accountID));
 
-			Profile profile = new Profile()
-			{
-				ID = accountElement.ID,
-				Name = accountElement.Name,
-				Settings = new Dictionary<string, object>()
-			};
-			profile.Settings.Add("AccountID", accountElement.ID.ToString());
+			Profile profile;
+			if (!_scheduler.Profiles.TryGetValue(accountID, out profile))
+				throw new Exception("No profile found for account " + accountID.ToString());
+
 			AccountServiceElement accountServiceElement = accountElement.Services[serviceName];
 			if (accountServiceElement == null)
 				throw new Exception(String.Format("Service '{0}' not found in account {1}.", serviceName, accountID));
 
 			
 			ServiceConfiguration myServiceConfiguration = ServiceConfiguration.FromLegacyConfiguration(accountServiceElement, _scheduler.GetServiceBaseConfiguration(accountServiceElement.Uses.Element.Name), profile,options);
-			myServiceConfiguration.SchedulingRules.Add(SchedulingRule.CreateUnplanned(targetDateTime));
-			guid = myServiceConfiguration.SchedulingRules[0].GuidForUnplanned;
-
 			myServiceConfiguration.Profile = profile;
 
-			_scheduler.AddServiceToSchedule(myServiceConfiguration);
-			return guid;
+			SchedulingRequest request = new SchedulingRequest(
+				myServiceConfiguration,
+				new SchedulingRule()
+				{
+					Scope = SchedulingScope.Unplanned,
+					SpecificDateTime = targetDateTime,
+					MaxDeviationAfter = TimeSpan.FromHours(1)
+				},
+				targetDateTime
+			);
+
+			_scheduler.AddRequestToSchedule(request);
+			return request.RequestID;
 		}
 
 		//=================================================
@@ -232,17 +235,13 @@ namespace Edge.Processes.SchedulingHost
 					_instancesEvents[instance.LegacyInstance.Guid] = instance.GetInfo();
 			}
 		}
-		void _scheduler_ServiceRunRequiredEvent(object sender, EventArgs e)
+		void _scheduler_ServiceRunRequiredEvent(object sender, SchedulingRequestTimeArrivedArgs e)
 		{
-			ServicesToRunEventArgs args = (ServicesToRunEventArgs)e;
-			foreach (Edge.Core.Scheduling.Objects.SchedulingRequest request in args.ServicesToRun)
-			{
-				request.Instance.StateChanged += new EventHandler(Instance_StateChanged);   // new EventHandler<Core.Services.ServiceStateChangedEventArgs>(LegacyInstance_StateChanged);
-				request.Instance.OutcomeReported += new EventHandler(Instance_OutcomeReported);  //new EventHandler(LegacyInstance_OutcomeReported);
-				request.Instance.ChildServiceRequested += new EventHandler<Legacy.ServiceRequestedEventArgs>(Instance_ChildServiceRequested); //new EventHandler<Core.Services.ServiceRequestedEventArgs>(LegacyInstance_ChildServiceRequested);
-				request.Instance.ProgressReported += new EventHandler(Instance_ProgressReported); //new EventHandler(LegacyInstance_ProgressReported);
-				request.Instance.Initialize();
-			}
+			e.Request.Instance.StateChanged += new EventHandler(Instance_StateChanged); 
+			e.Request.Instance.OutcomeReported += new EventHandler(Instance_OutcomeReported);
+			e.Request.Instance.ChildServiceRequested += new EventHandler<Legacy.ServiceRequestedEventArgs>(Instance_ChildServiceRequested);
+			e.Request.Instance.ProgressReported += new EventHandler(Instance_ProgressReported);
+			e.Request.Instance.Initialize();
 		}
 
 		void Instance_ProgressReported(object sender, EventArgs e)
