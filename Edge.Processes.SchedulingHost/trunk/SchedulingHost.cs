@@ -20,9 +20,9 @@ namespace Edge.Processes.SchedulingHost
 	{
 		private const string ClassName = "SchedulingHost";
 		private Scheduler _scheduler;
-		private Listener _listener;
+		//private Listener _listener;
 		private List<ISchedulingHostSubscriber> _callBacks = new List<ISchedulingHostSubscriber>();
-		private Dictionary<Guid, ServiceInstanceInfo> _instancesEvents = new Dictionary<Guid, ServiceInstanceInfo>();
+		private Dictionary<Guid, SchedulingRequestInfo> _requestsEvents = new Dictionary<Guid, SchedulingRequestInfo>();
 		//private Dictionary<Guid, Edge.Core.Scheduling.Objects.ServiceInstanceInfo> _scheduledServices = new Dictionary<Guid, Edge.Core.Scheduling.Objects.ServiceInstanceInfo>();
 
 		#region General Methods
@@ -33,8 +33,8 @@ namespace Edge.Processes.SchedulingHost
 			_scheduler = new Scheduler(true);
 			_scheduler.ScheduledRequestTimeArrived += new EventHandler<SchedulingRequestTimeArrivedArgs>(_scheduler_ServiceRunRequiredEvent);
 			_scheduler.NewScheduleCreatedEvent += new EventHandler<SchedulingInformationEventArgs>(_scheduler_NewScheduleCreatedEvent);
-			_listener = new Listener(_scheduler,this);
-			_listener.Start();
+			//_listener = new Listener(_scheduler,this);
+			//_listener.Start();
 
 
 			Thread t = new Thread(delegate()
@@ -43,11 +43,11 @@ namespace Edge.Processes.SchedulingHost
 				{
 					Thread.Sleep(3000);
 
-					List<ServiceInstanceInfo> instances;
-					lock (_instancesEvents)
+					List<SchedulingRequestInfo> instances;
+					lock (_requestsEvents)
 					{
-						instances = _instancesEvents.Values.ToList();
-						_instancesEvents.Clear();
+						instances = _requestsEvents.Values.ToList();
+						_requestsEvents.Clear();
 					}
 					foreach (var callBack in _callBacks)
 					{
@@ -213,26 +213,24 @@ namespace Edge.Processes.SchedulingHost
 
 		void _scheduler_NewScheduleCreatedEvent(object sender, SchedulingInformationEventArgs e)
 		{
-			List<ServiceInstance> instances = e.ScheduleInformation.ConvertAll<ServiceInstance>(p => p.Instance);
-			if (instances != null && instances.Count > 0)
-				AddToInstanceEvents(instances);
+			AddToRequestsEvents(e.ScheduleInformation);
 		}
-		private void AddToInstanceEvents(ServiceInstance instance)
+		private void AddToRequestsEvents(SchedulingRequest request)
 		{
-			if (!_instancesEvents.ContainsKey(instance.LegacyInstance.Guid))
-				_instancesEvents.Add(instance.LegacyInstance.Guid, instance.GetInfo());
+			if (!_requestsEvents.ContainsKey(request.RequestID))
+				_requestsEvents.Add(request.RequestID, request.GetInfo());
 			else
-				_instancesEvents[instance.LegacyInstance.Guid] = instance.GetInfo();
+				_requestsEvents[request.RequestID] = request.GetInfo();
 		}
 
-		private void AddToInstanceEvents(List<ServiceInstance> instances)
+		private void AddToRequestsEvents(List<SchedulingRequest> requests)
 		{
-			foreach (var instance in instances)
+			foreach (var request in requests)
 			{
-				if (!_instancesEvents.ContainsKey(instance.LegacyInstance.Guid))
-					_instancesEvents.Add(instance.LegacyInstance.Guid, instance.GetInfo());
+				if (!_requestsEvents.ContainsKey(request.RequestID))
+					_requestsEvents.Add(request.RequestID, request.GetInfo());
 				else
-					_instancesEvents[instance.LegacyInstance.Guid] = instance.GetInfo();
+					_requestsEvents[request.RequestID] = request.GetInfo();
 			}
 		}
 		void _scheduler_ServiceRunRequiredEvent(object sender, SchedulingRequestTimeArrivedArgs e)
@@ -247,8 +245,9 @@ namespace Edge.Processes.SchedulingHost
 		void Instance_ProgressReported(object sender, EventArgs e)
 		{
 			ServiceInstance serviceInstance = (ServiceInstance)sender;
+			SchedulingRequest request = serviceInstance.SchedulingRequest;
 			double progress = serviceInstance.Progress * 100;
-			AddToInstanceEvents(serviceInstance);
+			AddToRequestsEvents(request);
 
 		}
 
@@ -267,7 +266,7 @@ namespace Edge.Processes.SchedulingHost
 		void Instance_OutcomeReported(object sender, EventArgs e)
 		{
 			ServiceInstance serviceInstance = (ServiceInstance)sender;
-			AddToInstanceEvents(serviceInstance);
+			AddToRequestsEvents(serviceInstance.SchedulingRequest);
 		}
 
 		void Instance_StateChanged(object sender, EventArgs e)
@@ -277,7 +276,7 @@ namespace Edge.Processes.SchedulingHost
 				ServiceInstance serviceInstance = (ServiceInstance)sender;
 				if (serviceInstance.State == Legacy.ServiceState.Ready)
 					serviceInstance.Start();
-				AddToInstanceEvents(serviceInstance);
+				AddToRequestsEvents(serviceInstance.SchedulingRequest);
 			}
 			catch (Exception ex)
 			{
