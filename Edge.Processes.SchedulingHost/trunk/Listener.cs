@@ -5,7 +5,6 @@ using System.ServiceModel;
 using System.Text;
 using Edge.Core.Configuration;
 using Edge.Core.Scheduling;
-using Edge.Core.Scheduling.Objects;
 using Edge.Core.Services;
 
 //namespace Edge.Processes.SchedulingHost

@@ -97,6 +97,9 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Edge.Data.Pipeline">
+      <HintPath>..\..\..\edge-framework\Edge.Data.Pipeline\trunk\bin\Release\Edge.Data.Pipeline.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\thirdparty\Json.net\Newtonsoft.Json.dll</HintPath>
@@ -143,34 +146,18 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\edge-framework\Edge.Core.Scheduling\branches\2.9.1\Edge.Core.Scheduling.csproj">
-      <Project>{E700E7AA-08B7-44C3-8889-ACB4FAF92C90}</Project>
-      <Name>Edge.Core.Scheduling</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\edge-framework\Edge.Core\trunk\Edge.Core.csproj">
-      <Project>{AD4B53AD-B28A-4E90-9483-D2F7C8E6D436}</Project>
-      <Name>Edge.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\edge-framework\Edge.Data.Pipeline.Metrics\trunk\Edge.Data.Pipeline.Metrics.csproj">
-      <Project>{16440453-3AC6-48DA-A424-E87CE8DE09CF}</Project>
-      <Name>Edge.Data.Pipeline.Metrics</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\edge-framework\Edge.Data.Pipeline\trunk\Edge.Data.Pipeline.csproj">
-      <Project>{53391A99-E8CA-4262-A8E0-5F05A1CC6608}</Project>
-      <Name>Edge.Data.Pipeline</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\edge-services\Edge.Services.Facebook.GraphApi\trunk\Edge.Services.Facebook.GraphApi.csproj">
-      <Project>{0CA66633-F417-4724-9FC5-5F8C6E1D72B5}</Project>
-      <Name>Edge.Services.Facebook.GraphApi</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Host.resx">
       <DependentUpon>Host.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ProjectInstaller.resx">
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\edge-framework\Edge.Core\branches\3.0.0\Edge.Core.csproj">
+      <Project>{76F5133E-50CD-4282-97E0-B431FACB3ACC}</Project>
+      <Name>Edge.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

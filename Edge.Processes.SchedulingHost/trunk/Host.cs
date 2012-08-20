@@ -8,7 +8,7 @@ using System.ServiceProcess;
 using System.Text;
 using Edge.Core.Scheduling;
 using Edge.Core.Configuration;
-using Edge.Core.Scheduling.Objects;
+using Edge.Core.Scheduling;
 using System.ServiceModel;
 using System.ServiceModel.Description;
 
