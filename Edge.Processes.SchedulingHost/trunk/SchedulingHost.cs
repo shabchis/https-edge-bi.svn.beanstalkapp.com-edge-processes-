@@ -152,7 +152,7 @@ namespace Edge.Processes.SchedulingHost
 
 
 
-		public Guid AddUnplannedService(ServiceConfiguration serviceConfiguration, SchedulingRule rule)
+		public Guid AddUnplannedService(ServiceConfiguration serviceConfiguration)
 		{
 			if (serviceConfiguration == null)
 				throw new ArgumentNullException("serviceConfiguration");
@@ -160,19 +160,20 @@ namespace Edge.Processes.SchedulingHost
 			if (serviceConfiguration.ConfigurationLevel != ServiceConfigurationLevel.Profile)
 				throw new ArgumentException("Service configuration must be associated with a profile.", "serviceConfiguration");
 
-			if (rule == null)
-				rule = new SchedulingRule() { MaxDeviationAfter = TimeSpan.FromHours(3), Scope = SchedulingScope.Unplanned, SpecificDateTime = DateTime.Now };
+			ServiceConfiguration config = serviceConfiguration.Derive();
+			if (config.SchedulingRules.Count == 0)
+				config.SchedulingRules.Add(new SchedulingRule() { MaxDeviationAfter = TimeSpan.FromHours(3), Scope = SchedulingScope.Unplanned, SpecificDateTime = DateTime.Now });
 
-			if (rule.Scope != SchedulingScope.Unplanned)
-				throw new InvalidOperationException("Rule can either be null or with scope = unplanned.");
+			if (config.SchedulingRules.Count != 1 || config.SchedulingRules[0].Scope != SchedulingScope.Unplanned)
+				throw new InvalidOperationException("ServiceConfiguration.SchedulingRules must contain only one rule with scope Unplanned.");
 
 			ServiceInstance instance = _scheduler.Environment.NewServiceInstance(serviceConfiguration);
 			instance.SchedulingInfo = new SchedulingInfo()
 			{
 				SchedulingScope = SchedulingScope.Unplanned,
-				RequestedTime = rule.SpecificDateTime,
-				MaxDeviationBefore = rule.MaxDeviationBefore,
-				MaxDeviationAfter = rule.MaxDeviationAfter
+				RequestedTime = config.SchedulingRules[0].SpecificDateTime,
+				MaxDeviationBefore = config.SchedulingRules[0].MaxDeviationBefore,
+				MaxDeviationAfter = config.SchedulingRules[0].MaxDeviationAfter
 			};
 
 			_scheduler.AddRequestToSchedule(instance);
