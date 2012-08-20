@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
 using System.ServiceModel;
+using System.Text;
+using System.Threading;
+using Edge.Core.Configuration;
 using Edge.Core.Scheduling;
 using Edge.Core.Services;
-using Edge.Core.Utilities;
-using System.Data.SqlClient;
-using Edge.Core.Configuration;
-using System.Configuration;
-using System.Threading;
-using Newtonsoft.Json;
 using Edge.Core.Services.Configuration;
+using Edge.Core.Utilities;
+using Newtonsoft.Json;
 
 namespace Edge.Processes.SchedulingHost
 {
@@ -28,9 +28,10 @@ namespace Edge.Processes.SchedulingHost
 		#region General Methods
 		//=================================================
 
-		public void Init()
+		
+		public void Init(ServiceEnvironment environment)
 		{
-			_scheduler = new Scheduler(true);
+			_scheduler = new Scheduler(environment);
 			_scheduler.ScheduledRequestTimeArrived += new EventHandler<SchedulingRequestTimeArrivedArgs>(_scheduler_ServiceRunRequiredEvent);
 			_scheduler.NewScheduleCreatedEvent += new EventHandler<SchedulingInformationEventArgs>(_scheduler_NewScheduleCreatedEvent);
 			//_listener = new Listener(_scheduler,this);
@@ -113,27 +114,6 @@ namespace Edge.Processes.SchedulingHost
 			}
 		}
 
-		public PingInfo Ping(Guid guid)
-		{
-			PingInfo alive;
-			try
-			{
-				var instance = _scheduler.ScheduledServices.Where(i => i.InstanceID == guid); //Get from legacyInstance
-				if (instance.Count() > 0)
-					alive = instance.ToList()[0].Ping();
-				else
-				{
-					alive = new PingInfo();
-					alive.Exception = new Exception(string.Format("Service with Guid {0} not found", guid));
-				}
-			}
-			catch (Exception ex)
-			{
-				alive = new PingInfo() { Timestamp = DateTime.Now, Exception = ex };
-			}
-			return alive;
-		}
-
 
 		public void Abort(Guid guid)
 		{
@@ -172,36 +152,31 @@ namespace Edge.Processes.SchedulingHost
 
 
 
-		public Guid AddUnplannedService(int accountID, string serviceName, DateTime targetDateTime, Dictionary<string, string> options)
+		public Guid AddUnplannedService(ServiceConfiguration serviceConfiguration, SchedulingRule rule)
 		{
-			AccountElement accountElement = EdgeServicesConfiguration.Current.Accounts.GetAccount(accountID);
-			if (accountElement == null)
-				throw new Exception(String.Format("Account '{0}' not found in configuration.", accountID));
+			if (serviceConfiguration == null)
+				throw new ArgumentNullException("serviceConfiguration");
 
-			ServiceProfile profile;
-			if (!_scheduler.Profiles.TryGetValue(accountID, out profile))
-				throw new Exception("No profile found for account " + accountID.ToString());
+			if (serviceConfiguration.ConfigurationLevel != ServiceConfigurationLevel.Profile)
+				throw new ArgumentException("Service configuration must be associated with a profile.", "serviceConfiguration");
 
-			AccountServiceElement accountServiceElement = accountElement.Services[serviceName];
-			if (accountServiceElement == null)
-				throw new Exception(String.Format("Service '{0}' not found in account {1}.", serviceName, accountID));
+			if (rule == null)
+				rule = new SchedulingRule() { MaxDeviationAfter = TimeSpan.FromHours(3), Scope = SchedulingScope.Unplanned, SpecificDateTime = DateTime.Now };
 
-			
-			ServiceConfiguration myServiceConfiguration =new  ServiceConfiguration.FromLegacyConfiguration(accountServiceElement, _scheduler.GetServiceBaseConfiguration(accountServiceElement.Uses.Element.Name), profile,options);
-			myServiceConfiguration.Profile = profile;
+			if (rule.Scope != SchedulingScope.Unplanned)
+				throw new InvalidOperationException("Rule can either be null or with scope = unplanned.");
 
-			ServiceInstance request =new ServiceInstance();
-			SchedulingRule rule = new SchedulingRule()
-				{
-					Scope = SchedulingScope.Unplanned,
-					SpecificDateTime = targetDateTime,
-					MaxDeviationAfter = TimeSpan.FromHours(1)
-				};
-				
-			
+			ServiceInstance instance = _scheduler.Environment.NewServiceInstance(serviceConfiguration);
+			instance.SchedulingInfo = new SchedulingInfo()
+			{
+				SchedulingScope = SchedulingScope.Unplanned,
+				RequestedTime = rule.SpecificDateTime,
+				MaxDeviationBefore = rule.MaxDeviationBefore,
+				MaxDeviationAfter = rule.MaxDeviationAfter
+			};
 
-			_scheduler.AddRequestToSchedule(request);
-			return request.InstanceID;
+			_scheduler.AddRequestToSchedule(instance);
+			return instance.InstanceID;
 		}
 
 		//=================================================

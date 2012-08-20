@@ -8,7 +8,7 @@ using System.ServiceProcess;
 using System.Text;
 using Edge.Core.Scheduling;
 using Edge.Core.Configuration;
-using Edge.Core.Scheduling;
+using Edge.Core.Services;
 using System.ServiceModel;
 using System.ServiceModel.Description;
 
@@ -16,6 +16,7 @@ namespace Edge.Processes.SchedulingHost
 {
 	public partial class Host : ServiceBase
 	{
+		ServiceExecutionHost _executionHost;
 		SchedulingHost _schedulingHost;
 		public ServiceHost _wcfHost = null;		
 		
@@ -34,13 +35,16 @@ namespace Edge.Processes.SchedulingHost
 			//TODO: FROM CONFIGURATION
 			if (_wcfHost == null)
 			{
-				if (_schedulingHost == null)
+				if (_executionHost == null)
+				{
+					_executionHost = new ServiceExecutionHost();
 					_schedulingHost = new SchedulingHost();
+				}
 
 				_wcfHost = new ServiceHost(_schedulingHost);
 				_wcfHost.Open();
 
-				_schedulingHost.Init();
+				_schedulingHost.Init(_executionHost.Environment);
 				_schedulingHost.Start();
 			}
 		}
