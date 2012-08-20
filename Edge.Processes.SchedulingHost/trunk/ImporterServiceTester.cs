@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Edge.Data.Pipeline;
-using Edge.Data.Pipeline.Services;
 using System.Threading;
 
 namespace Edge.Processes.SchedulingHost

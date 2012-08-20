@@ -145,12 +145,13 @@ namespace Edge.Processes.SchedulingHost
 			}
 		}
 
-		public ProfilesCollection GetSchedulingProfiles()
+		public ServiceProfile[] GetSchedulingProfiles()
 		{
-			return _scheduler.Profiles;
+			ServiceProfile[] profiles = new ServiceProfile[_scheduler.Profiles.Count];
+			_scheduler.Profiles.CopyTo(profiles, 0);
+			return profiles;
+
 		}
-
-
 
 		public Guid AddUnplannedService(ServiceConfiguration serviceConfiguration)
 		{
@@ -272,6 +273,21 @@ namespace Edge.Processes.SchedulingHost
 
 
 
+	}
+	public class TestService : Service
+	{
+		protected override ServiceOutcome DoWork()
+		{
+			for (int i = 1; i < 10; i++)
+			{
+				Thread.Sleep(TimeSpan.FromMilliseconds(50));
+				Progress = ((double)i) / 10;
+			}
+
+			//throw new InvalidOperationException("Can't do this shit here.");
+
+			return ServiceOutcome.Success;
+		}
 	}
 
 
