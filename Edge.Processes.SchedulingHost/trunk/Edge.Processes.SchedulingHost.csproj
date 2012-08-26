@@ -151,6 +151,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\edge-framework\Edge.Core.Scheduling\branches\3.0.0\Edge.Core.Services.Scheduling.csproj">
+      <Project>{4C2A1AFD-56B9-497E-A649-1FDC30F0F4E0}</Project>
+      <Name>Edge.Core.Services.Scheduling</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\edge-framework\Edge.Core\branches\3.0.0\Edge.Core.csproj">
       <Project>{76F5133E-50CD-4282-97E0-B431FACB3ACC}</Project>
       <Name>Edge.Core</Name>

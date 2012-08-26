@@ -12,6 +12,7 @@ using Edge.Core.Services;
 using Edge.Core.Services.Configuration;
 using Edge.Core.Utilities;
 using Newtonsoft.Json;
+using Edge.Core.Services.Scheduling;
 
 namespace Edge.Processes.SchedulingHost
 {
@@ -28,10 +29,11 @@ namespace Edge.Processes.SchedulingHost
 		#region General Methods
 		//=================================================
 
-		
+
 		public void Init(ServiceEnvironment environment)
 		{
 			_scheduler = new Scheduler(environment);
+			_scheduler.Environment.ServiceScheduleRequested += new EventHandler<ServiceInstanceEventArgs>(Environment_ServiceScheduleRequested);
 			_scheduler.ScheduledRequestTimeArrived += new EventHandler<SchedulingRequestTimeArrivedArgs>(_scheduler_ServiceRunRequiredEvent);
 			_scheduler.NewScheduleCreatedEvent += new EventHandler<SchedulingInformationEventArgs>(_scheduler_NewScheduleCreatedEvent);
 			//_listener = new Listener(_scheduler,this);
@@ -66,6 +68,14 @@ namespace Edge.Processes.SchedulingHost
 				}
 			});
 			t.Start();
+		}
+
+		void Environment_ServiceScheduleRequested(object sender, ServiceInstanceEventArgs e)
+		{
+			if (e.ServiceInstance.ParentInstance == null)
+				_scheduler.AddChildServiceToSchedule(e.ServiceInstance);
+			else
+				_scheduler.AddRequestToSchedule(e.ServiceInstance);
 		}
 
 
@@ -211,21 +221,18 @@ namespace Edge.Processes.SchedulingHost
 		}
 		void _scheduler_ServiceRunRequiredEvent(object sender, SchedulingRequestTimeArrivedArgs e)
 		{
-			e.Request.StateChanged += new EventHandler(Instance_StateChanged); 
-			e.Request.OutcomeReported += new EventHandler(Instance_OutcomeReported);
-			//e.Request.ChildServiceRequested += new EventHandler<Legacy.ServiceRequestedEventArgs>(Instance_ChildServiceRequested);
-			e.Request.ProgressReported += new EventHandler(Instance_ProgressReported);
+			e.Request.StateChanged += new EventHandler(Instance_StateChanged);
 			e.Request.Initialize();
 		}
 
-		void Instance_ProgressReported(object sender, EventArgs e)
-		{
-			ServiceInstance serviceInstance = (ServiceInstance)sender;
-			ServiceInstance request = serviceInstance;
-			double progress = serviceInstance.Progress * 100;
-			AddToRequestsEvents(request);
+		//void Instance_ProgressReported(object sender, EventArgs e)
+		//{
+		//    ServiceInstance serviceInstance = (ServiceInstance)sender;
+		//    ServiceInstance request = serviceInstance;
+		//    double progress = serviceInstance.Progress * 100;
+		//    AddToRequestsEvents(request);
 
-		}
+		//}
 
 		//void Instance_ChildServiceRequested(object sender, Legacy.ServiceRequestedEventArgs e)
 		//{
@@ -239,11 +246,11 @@ namespace Edge.Processes.SchedulingHost
 		//    }
 		//}
 
-		void Instance_OutcomeReported(object sender, EventArgs e)
-		{
-			ServiceInstance serviceInstance = (ServiceInstance)sender;
-			AddToRequestsEvents(serviceInstance);
-		}
+		//void Instance_OutcomeReported(object sender, EventArgs e)
+		//{
+		//    ServiceInstance serviceInstance = (ServiceInstance)sender;
+		//    AddToRequestsEvents(serviceInstance);
+		//}
 
 		void Instance_StateChanged(object sender, EventArgs e)
 		{
