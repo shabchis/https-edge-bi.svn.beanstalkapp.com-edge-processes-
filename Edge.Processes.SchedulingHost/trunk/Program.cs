@@ -17,12 +17,12 @@ namespace Edge.Processes.SchedulingHost
 		static void Main(string[] args)
 		{
 
-			string configFileName = EdgeServicesConfiguration.DefaultFileName;
-			if (args.Length > 0 && args[0].StartsWith("/") && args[0].Length > 1)
-			{
-				configFileName = args[0].Substring(1);
-			}
-			EdgeServicesConfiguration.Load(configFileName);
+			//string configFileName = EdgeServicesConfiguration.DefaultFileName;
+			//if (args.Length > 0 && args[0].StartsWith("/") && args[0].Length > 1)
+			//{
+			//    configFileName = args[0].Substring(1);
+			//}
+			//EdgeServicesConfiguration.Load(configFileName);
 			ServiceBase[] ServicesToRun;
 			Host host=new Host();
 			ServicesToRun = new ServiceBase[] 

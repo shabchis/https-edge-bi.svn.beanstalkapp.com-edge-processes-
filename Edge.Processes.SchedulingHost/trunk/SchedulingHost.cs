@@ -155,13 +155,7 @@ namespace Edge.Processes.SchedulingHost
 			}
 		}
 
-		public ServiceProfile[] GetSchedulingProfiles()
-		{
-			ServiceProfile[] profiles = new ServiceProfile[_scheduler.Profiles.Count];
-			_scheduler.Profiles.CopyTo(profiles, 0);
-			return profiles;
-
-		}
+		
 
 		public Guid AddUnplannedService(ServiceConfiguration serviceConfiguration)
 		{
@@ -280,6 +274,16 @@ namespace Edge.Processes.SchedulingHost
 
 
 
+
+		#region ISchedulingHost Members
+
+
+		public ServiceProfile[] GetSchedulingProfiles()
+		{
+			throw new NotImplementedException();
+		}
+
+		#endregion
 	}
 	public class TestService : Service
 	{

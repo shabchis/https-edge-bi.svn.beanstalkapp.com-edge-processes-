@@ -11,13 +11,14 @@ using Edge.Core.Configuration;
 using Edge.Core.Services;
 using System.ServiceModel;
 using System.ServiceModel.Description;
+using Edge.Core.Services.Scheduling;
 
 namespace Edge.Processes.SchedulingHost
 {
 	public partial class Host : ServiceBase
 	{
 		ServiceExecutionHost _executionHost;
-		SchedulingHost _schedulingHost;
+		Scheduler _schedulingHost;
 		public ServiceHost _wcfHost = null;		
 		
 		public Host()
@@ -33,19 +34,31 @@ namespace Edge.Processes.SchedulingHost
 		protected override void OnStart(string[] args)
 		{
 			//TODO: FROM CONFIGURATION
+			#region temp
+			var envConfig = new ServiceEnvironmentConfiguration()
+			{
+				ConnectionString = "Data Source=bi_rnd;Initial Catalog=EdgeSystem;Integrated Security=true",
+				HostListSP = "Service_HostList",
+				HostRegisterSP = "Service_HostRegister",
+				HostUnregisterSP = "Service_HostUnregister"
+			};
+
+			#endregion
 			if (_wcfHost == null)
 			{
 				if (_executionHost == null)
 				{
-					_executionHost = new ServiceExecutionHost();
-					_schedulingHost = new SchedulingHost();
+					//temp
+					_executionHost = new ServiceExecutionHost("Johnny", envConfig);
+					
 				}
 
-				_wcfHost = new ServiceHost(_schedulingHost);
-				_wcfHost.Open();
-
-				_schedulingHost.Init(_executionHost.Environment);
+				_schedulingHost = new Scheduler(_executionHost.Environment);
 				_schedulingHost.Start();
+				//_wcfHost.Open();
+
+				//_schedulingHost.Init(_executionHost.Environment);
+				//_schedulingHost.Start();
 			}
 		}
 		
