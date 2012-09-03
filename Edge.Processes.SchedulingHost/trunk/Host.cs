@@ -38,9 +38,9 @@ namespace Edge.Processes.SchedulingHost
 			var envConfig = new ServiceEnvironmentConfiguration()
 			{
 				ConnectionString = "Data Source=bi_rnd;Initial Catalog=EdgeSystem;Integrated Security=true",
-				HostListSP = "Service_HostList",
-				HostRegisterSP = "Service_HostRegister",
-				HostUnregisterSP = "Service_HostUnregister"
+				SP_HostList = "Service_HostList",
+				SP_HostRegister = "Service_HostRegister",
+				SP_HostUnregister = "Service_HostUnregister"
 			};
 
 			#endregion
