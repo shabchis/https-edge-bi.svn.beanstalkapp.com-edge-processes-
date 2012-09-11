@@ -19,7 +19,8 @@ namespace Edge.Processes.SchedulingHost
 	{
 		ServiceExecutionHost _executionHost;
 		Scheduler _schedulingHost;
-		public ServiceHost _wcfHost = null;		
+		public ServiceHost _wcfHost = null;
+		ServiceEnvironment _environment;
 		
 		public Host()
 		{
@@ -37,10 +38,16 @@ namespace Edge.Processes.SchedulingHost
 			#region temp
 			var envConfig = new ServiceEnvironmentConfiguration()
 			{
+				DefaultHostName = "Johnny",
 				ConnectionString = "Data Source=bi_rnd;Initial Catalog=EdgeSystem;Integrated Security=true",
 				SP_HostList = "Service_HostList",
 				SP_HostRegister = "Service_HostRegister",
-				SP_HostUnregister = "Service_HostUnregister"
+				SP_HostUnregister = "Service_HostUnregister",
+				SP_InstanceSave = "Service_InstanceSave",
+				SP_InstanceReset = "Service_InstanceReset",
+				SP_EnvironmentEventList = "Service_EnvironmentEventList",
+				SP_EnvironmentEventRegister = "Service_EnvironmentEventRegister"
+
 			};
 
 			#endregion
@@ -49,16 +56,15 @@ namespace Edge.Processes.SchedulingHost
 				if (_executionHost == null)
 				{
 					//temp
-					_executionHost = new ServiceExecutionHost("Johnny", envConfig);
+					_environment=new ServiceEnvironment(envConfig);
+					_executionHost = new ServiceExecutionHost(_environment.EnvironmentConfiguration.DefaultHostName,_environment);
+					
 					
 				}
 
 				_schedulingHost = new Scheduler(_executionHost.Environment);
 				_schedulingHost.Start();
-				//_wcfHost.Open();
-
-				//_schedulingHost.Init(_executionHost.Environment);
-				//_schedulingHost.Start();
+				
 			}
 		}
 		
