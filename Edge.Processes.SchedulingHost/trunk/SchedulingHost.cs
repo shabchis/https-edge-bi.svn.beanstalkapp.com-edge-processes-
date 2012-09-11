@@ -33,7 +33,7 @@ namespace Edge.Processes.SchedulingHost
 		public void Init(ServiceEnvironment environment)
 		{
 			_scheduler = new Scheduler(environment);
-			_scheduler.Environment.ServiceScheduleRequested += new EventHandler<ServiceInstanceEventArgs>(Environment_ServiceScheduleRequested);
+			_scheduler.Environment.ServiceScheduleRequested += new EventHandler<ServiceScheduleRequestedEventArgs>(Environment_ServiceScheduleRequested);
 			_scheduler.ScheduledRequestTimeArrived += new EventHandler<SchedulingRequestTimeArrivedArgs>(_scheduler_ServiceRunRequiredEvent);
 			_scheduler.NewScheduleCreatedEvent += new EventHandler<SchedulingInformationEventArgs>(_scheduler_NewScheduleCreatedEvent);
 			//_listener = new Listener(_scheduler,this);
@@ -70,7 +70,7 @@ namespace Edge.Processes.SchedulingHost
 			t.Start();
 		}
 
-		void Environment_ServiceScheduleRequested(object sender, ServiceInstanceEventArgs e)
+		void Environment_ServiceScheduleRequested(object sender, ServiceScheduleRequestedEventArgs e)
 		{
 			if (e.ServiceInstance.ParentInstance == null)
 				_scheduler.AddChildServiceToSchedule(e.ServiceInstance);
