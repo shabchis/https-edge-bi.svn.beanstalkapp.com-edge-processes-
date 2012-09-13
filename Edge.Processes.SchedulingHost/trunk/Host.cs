@@ -18,7 +18,8 @@ namespace Edge.Processes.SchedulingHost
 	public partial class Host : ServiceBase
 	{
 		ServiceExecutionHost _executionHost;
-		Scheduler _schedulingHost;
+		//Scheduler _schedulingHost;
+		SchedulingHost _schedulingHost;
 		public ServiceHost _wcfHost = null;
 		ServiceEnvironment _environment;
 		
@@ -62,9 +63,14 @@ namespace Edge.Processes.SchedulingHost
 					
 				}
 
-				_schedulingHost = new Scheduler(_executionHost.Environment);
+				_schedulingHost = new SchedulingHost(_executionHost);				
+
+				_wcfHost = new ServiceHost(_schedulingHost);
+				_wcfHost.Open();
+
+				_schedulingHost.Init();
 				_schedulingHost.Start();
-				
+			
 			}
 		}
 		

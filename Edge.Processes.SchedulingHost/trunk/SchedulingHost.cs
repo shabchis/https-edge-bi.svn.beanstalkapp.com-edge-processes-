@@ -21,7 +21,7 @@ namespace Edge.Processes.SchedulingHost
 	{
 		private const string ClassName = "SchedulingHost";
 		private Scheduler _scheduler;
-		//private Listener _listener;
+		ServiceExecutionHost _executionHost;		
 		private List<ISchedulingHostSubscriber> _callBacks = new List<ISchedulingHostSubscriber>();
 		private Dictionary<Guid, ServiceInstance> _requestsEvents = new Dictionary<Guid, ServiceInstance>();
 		//private Dictionary<Guid, Edge.Core.Scheduling.Objects.ServiceInstanceInfo> _scheduledServices = new Dictionary<Guid, Edge.Core.Scheduling.Objects.ServiceInstanceInfo>();
@@ -29,15 +29,20 @@ namespace Edge.Processes.SchedulingHost
 		#region General Methods
 		//=================================================
 
-
-		public void Init(ServiceEnvironment environment)
+		public SchedulingHost(ServiceExecutionHost serviceExecutionHost)
 		{
-			_scheduler = new Scheduler(environment);
+			_executionHost = serviceExecutionHost;
+			
+
+		}
+		public void Init()
+		{
+			
+			_scheduler = new Scheduler(_executionHost.Environment);
 			_scheduler.Environment.ServiceScheduleRequested += new EventHandler<ServiceScheduleRequestedEventArgs>(Environment_ServiceScheduleRequested);
 			_scheduler.ScheduledRequestTimeArrived += new EventHandler<SchedulingRequestTimeArrivedArgs>(_scheduler_ServiceRunRequiredEvent);
 			_scheduler.NewScheduleCreatedEvent += new EventHandler<SchedulingInformationEventArgs>(_scheduler_NewScheduleCreatedEvent);
-			//_listener = new Listener(_scheduler,this);
-			//_listener.Start();
+			
 
 
 			Thread t = new Thread(delegate()
